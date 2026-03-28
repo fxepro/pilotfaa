@@ -1,0 +1,518 @@
+homepage patch
+
+From 47bd292073aba46980c54a21b8bec019935ed0f4 Mon Sep 17 00:00:00 2001
+From: PilotFAA Integration <integration@pilotfaa.dev>
+Date: Sat, 28 Mar 2026 02:09:30 +0000
+Subject: [PATCH] feat: PilotFAA homepage + role-based login routing
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Replace Admin Rodeo homepage with PilotFAA public landing page
+  Sections: nav, hero, stats bar, course cards, features, CTA, footer
+  All CTAs link to /login
+
+- Rewrite workspace/login with role-based post-login redirect:
+    role === 'admin' (is_superuser) → /workspace
+    everyone else                  → /lms
+
+- Simplify /login → redirect to /workspace/login
+
+- Remove 'Themes' entry from sidebar navigation
+  (both get_navigation and get_sidebar_matrix)
+---
+ backend/users/permission_views.py   |  14 --
+ studio/app/login/page.tsx           |  23 +--
+ studio/app/page.tsx                 | 129 ++++++++++++++-
+ studio/app/workspace/login/page.tsx | 234 +++++++++++++---------------
+ 4 files changed, 242 insertions(+), 158 deletions(-)
+
+diff --git a/backend/users/permission_views.py b/backend/users/permission_views.py
+index d95153f..fb1e12e 100644
+--- a/backend/users/permission_views.py
++++ b/backend/users/permission_views.py
+@@ -244,13 +244,6 @@ def get_navigation(request):
+                         "icon": "Database",
+                         "permission": "tools.view"
+                     },
+-                    {
+-                        "id": "themes",
+-                        "title": "Theme Manager",
+-                        "href": "/workspace/themes",
+-                        "icon": "Palette",
+-                        "permission": "themes.view"
+-                    },
+                     {
+                         "id": "feedback",
+                         "title": "Feedback",
+@@ -630,13 +623,6 @@ def get_sidebar_matrix(request):
+                         "icon": "Database",
+                         "permission": "tools.view"
+                     },
+-                    {
+-                        "id": "themes",
+-                        "title": "Theme Manager",
+-                        "href": "/workspace/themes",
+-                        "icon": "Palette",
+-                        "permission": "themes.view"
+-                    },
+                     {
+                         "id": "feedback",
+                         "title": "Feedback",
+diff --git a/studio/app/login/page.tsx b/studio/app/login/page.tsx
+index 7c77d8c..0d5993c 100644
+--- a/studio/app/login/page.tsx
++++ b/studio/app/login/page.tsx
+@@ -1,23 +1,6 @@
+-"use client";
+-import React, { useEffect } from "react";
+-import { useRouter } from "next/navigation";
++import { redirect } from "next/navigation";
+ 
++// /login → /workspace/login (single unified login for all users)
+ export default function LoginPage() {
+-  const router = useRouter();
+-  
+-  // Redirect to workspace login immediately
+-  useEffect(() => {
+-    router.replace("/workspace/login");
+-  }, [router]);
+-
+-  // Show loading state while redirecting
+-  return (
+-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-palette-accent-3 via-white to-palette-accent-3">
+-      <div className="text-center">
+-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-palette-primary mx-auto mb-4"></div>
+-        <p className="text-slate-600">Redirecting to workspace login...</p>
+-      </div>
+-    </div>
+-  );
++  redirect("/workspace/login");
+ }
+-
+diff --git a/studio/app/page.tsx b/studio/app/page.tsx
+index 7e51c5f..161e0ed 100644
+--- a/studio/app/page.tsx
++++ b/studio/app/page.tsx
+@@ -1,7 +1,132 @@
+ "use client";
+ 
+-import { RodeoHomepage } from "@/components/rodeo-homepage"
++import React from "react";
++import Link from "next/link";
++
++const COURSES = [
++  { emoji: "✈️", name: "Private Pilot", sub: "Fixed-Wing", ref: "PHAK FAA-H-8083-25C", lessons: 60, hours: "40h", color: "#1756C8" },
++  { emoji: "🚁", name: "Helicopter PPL", sub: "Rotorcraft",  ref: "RFH FAA-H-8083-21B",  lessons: 48, hours: "32h", color: "#127A48" },
++  { emoji: "🛩️", name: "Instrument Rating", sub: "IFR",     ref: "IFH FAA-H-8083-15B",  lessons: 52, hours: "36h", color: "#C8860A" },
++];
++
++const FEATURES = [
++  { icon: "🤖", title: "AI Ground Instructor",   body: "Captain FAA answers every question grounded in official PHAK, FAR/AIM, and ACS sources — with citations on every response." },
++  { icon: "✏️", title: "FAA-Style Quizzes",       body: "Chapter quizzes and full 60-question mock exams with rationale sourced directly from the FAA handbook." },
++  { icon: "📊", title: "ACS Progress Tracking",   body: "Track mastery at the ACS task level — the same standard your DPE uses on checkride day." },
++  { icon: "📖", title: "Integrated PHAK Reference",body: "Every lesson links directly to the source chapter and page. No guessing, no paraphrasing." },
++];
+ 
+ export default function HomePage() {
+-  return <RodeoHomepage />
++  return (
++    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: "#f8fafc", minHeight: "100vh" }}>
++
++      {/* Nav */}
++      <nav style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: "0 32px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50, boxShadow: "0 1px 4px rgba(15,31,58,0.06)" }}>
++        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
++          <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg,#1756C8,#4A7AE0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>✈</div>
++          <span style={{ fontWeight: 800, fontSize: 19, color: "#0F1F3A" }}>Pilot<span style={{ color: "#1756C8" }}>FAA</span></span>
++          <span style={{ fontSize: 10, color: "#7A90AE", letterSpacing: "1.5px", textTransform: "uppercase", fontFamily: "monospace" }}>Ground School</span>
++        </div>
++        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
++          <Link href="#courses"  style={{ color: "#3A4E6B", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Courses</Link>
++          <Link href="#features" style={{ color: "#3A4E6B", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>Features</Link>
++          <Link href="/login" style={{ background: "#1756C8", color: "#fff", padding: "8px 20px", borderRadius: 7, fontSize: 14, fontWeight: 600, textDecoration: "none" }}>Sign In</Link>
++        </div>
++      </nav>
++
++      {/* Hero */}
++      <section style={{ background: "linear-gradient(130deg,#0F1F3A 0%,#1756C8 55%,#2362e0 100%)", padding: "100px 32px 80px", textAlign: "center", position: "relative", overflow: "hidden" }}>
++        <div style={{ position: "absolute", right: "8%", top: "50%", transform: "translateY(-50%) rotate(10deg)", fontSize: 180, opacity: 0.05, pointerEvents: "none" }}>✈</div>
++        <div style={{ maxWidth: 720, margin: "0 auto", position: "relative" }}>
++          <div style={{ display: "inline-block", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 20, padding: "4px 14px", fontSize: 11, color: "rgba(255,255,255,0.85)", letterSpacing: "2px", textTransform: "uppercase" as const, fontFamily: "monospace", marginBottom: 20 }}>
++            FAA-Grounded Aviation Ground School
++          </div>
++          <h1 style={{ fontFamily: "Georgia,serif", fontSize: "clamp(36px,6vw,58px)", fontWeight: 700, color: "#fff", lineHeight: 1.15, marginBottom: 20 }}>
++            Pass Your FAA Knowledge<br /><em style={{ fontStyle: "italic", color: "rgba(255,255,255,0.85)" }}>Test. First Try.</em>
++          </h1>
++          <p style={{ fontSize: 18, color: "rgba(255,255,255,0.75)", lineHeight: 1.7, maxWidth: 540, margin: "0 auto 36px" }}>
++            AI-powered lessons, quizzes, and an on-call AI ground instructor — all grounded in official FAA publications with citations on every answer.
++          </p>
++          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" as const }}>
++            <Link href="/login" style={{ background: "#fff", color: "#1756C8", padding: "14px 32px", borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>Start Studying Free →</Link>
++            <Link href="#courses" style={{ background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.3)", color: "#fff", padding: "14px 28px", borderRadius: 8, fontSize: 15, fontWeight: 600, textDecoration: "none" }}>View Courses</Link>
++          </div>
++          <div style={{ display: "flex", gap: 24, justifyContent: "center", marginTop: 48, flexWrap: "wrap" as const }}>
++            {["📄 PHAK FAA-H-8083-25C","⚖️ 14 CFR Parts 61 & 91","🎯 Private Pilot ACS-6C","📡 AIM 2024"].map(b => (
++              <span key={b} style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", fontFamily: "monospace" }}>{b}</span>
++            ))}
++          </div>
++        </div>
++      </section>
++
++      {/* Stats */}
++      <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: "20px 32px", display: "flex", justifyContent: "center", gap: 48, flexWrap: "wrap" as const }}>
++        {[["200+","FAA Exam Questions"],["17","PHAK Chapters"],["60","ACS Task Codes"],["100%","FAA-Cited Answers"]].map(([v, l]) => (
++          <div key={l} style={{ textAlign: "center" as const }}>
++            <div style={{ fontSize: 26, fontWeight: 800, color: "#1756C8", fontFamily: "Georgia,serif" }}>{v}</div>
++            <div style={{ fontSize: 12, color: "#7A90AE", marginTop: 2 }}>{l}</div>
++          </div>
++        ))}
++      </div>
++
++      {/* Courses */}
++      <section id="courses" style={{ padding: "72px 32px", maxWidth: 1100, margin: "0 auto" }}>
++        <div style={{ textAlign: "center" as const, marginBottom: 48 }}>
++          <h2 style={{ fontFamily: "Georgia,serif", fontSize: 34, fontWeight: 700, color: "#0F1F3A", marginBottom: 10 }}>FAA Certification Courses</h2>
++          <p style={{ color: "#7A90AE", fontSize: 16 }}>Every course maps directly to its FAA source publication and ACS standard.</p>
++        </div>
++        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 24 }}>
++          {COURSES.map(c => (
++            <div key={c.name} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 16, padding: 28, boxShadow: "0 2px 12px rgba(15,31,58,0.06)", borderTop: `3px solid ${c.color}` }}>
++              <div style={{ fontSize: 36, marginBottom: 12 }}>{c.emoji}</div>
++              <div style={{ fontWeight: 700, fontSize: 18, color: "#0F1F3A" }}>{c.name}</div>
++              <div style={{ fontSize: 13, color: "#7A90AE", marginBottom: 14 }}>{c.sub}</div>
++              <div style={{ display: "inline-block", background: "#EBF1FB", color: "#1756C8", fontSize: 10, fontWeight: 600, fontFamily: "monospace", padding: "3px 9px", borderRadius: 4, marginBottom: 16 }}>{c.ref}</div>
++              <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
++                <div style={{ fontSize: 13, color: "#3A4E6B" }}><strong>{c.lessons}</strong> <span style={{ color: "#7A90AE" }}>lessons</span></div>
++                <div style={{ fontSize: 13, color: "#3A4E6B" }}><strong>{c.hours}</strong> <span style={{ color: "#7A90AE" }}>est.</span></div>
++              </div>
++              <Link href="/login" style={{ display: "block", textAlign: "center" as const, background: c.color, color: "#fff", padding: "10px 0", borderRadius: 7, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Start Course →</Link>
++            </div>
++          ))}
++        </div>
++      </section>
++
++      {/* Features */}
++      <section id="features" style={{ background: "#fff", padding: "72px 32px" }}>
++        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
++          <div style={{ textAlign: "center" as const, marginBottom: 48 }}>
++            <h2 style={{ fontFamily: "Georgia,serif", fontSize: 34, fontWeight: 700, color: "#0F1F3A", marginBottom: 10 }}>Built Around How the FAA Thinks</h2>
++            <p style={{ color: "#7A90AE", fontSize: 16 }}>Not a question bank. A complete ground school.</p>
++          </div>
++          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 24 }}>
++            {FEATURES.map(f => (
++              <div key={f.title} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: 24 }}>
++                <div style={{ fontSize: 28, marginBottom: 12 }}>{f.icon}</div>
++                <div style={{ fontWeight: 700, fontSize: 15, color: "#0F1F3A", marginBottom: 8 }}>{f.title}</div>
++                <div style={{ fontSize: 13.5, color: "#3A4E6B", lineHeight: 1.65 }}>{f.body}</div>
++              </div>
++            ))}
++          </div>
++        </div>
++      </section>
++
++      {/* CTA */}
++      <section style={{ background: "linear-gradient(130deg,#0F1F3A,#1756C8)", padding: "72px 32px", textAlign: "center" as const }}>
++        <h2 style={{ fontFamily: "Georgia,serif", fontSize: 34, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Ready for your checkride?</h2>
++        <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 16, marginBottom: 32 }}>Start studying today. Free access to preview lessons.</p>
++        <Link href="/login" style={{ background: "#fff", color: "#1756C8", padding: "14px 36px", borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none" }}>Create Free Account →</Link>
++      </section>
++
++      {/* Footer */}
++      <footer style={{ background: "#0F1F3A", padding: "32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" as const, gap: 16 }}>
++        <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>© {new Date().getFullYear()} PilotFAA — FAA content is public domain per 17 U.S.C. §105</div>
++        <div style={{ display: "flex", gap: 20 }}>
++          {[["Privacy","/privacy"],["Terms","/terms"]].map(([label, href]) => (
++            <Link key={label} href={href} style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, textDecoration: "none" }}>{label}</Link>
++          ))}
++        </div>
++      </footer>
++    </div>
++  );
+ }
+diff --git a/studio/app/workspace/login/page.tsx b/studio/app/workspace/login/page.tsx
+index b145750..c56b028 100644
+--- a/studio/app/workspace/login/page.tsx
++++ b/studio/app/workspace/login/page.tsx
+@@ -1,168 +1,158 @@
+ "use client";
++
+ import React, { useState } from "react";
+ import { useRouter } from "next/navigation";
+ import Link from "next/link";
+ import axios from "axios";
+-import { SimpleHeroSection } from "@/components/simple-hero-section";
+ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
+ import { Label } from "@/components/ui/label";
+-import { User, Lock, LogIn, UserPlus } from "lucide-react";
++import { User, Lock, LogIn } from "lucide-react";
+ import { captureEvent, identifyUser } from "@/lib/posthog";
+ 
+-// Use relative URL in production (browser), localhost in dev (SSR)
+-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? (typeof window !== 'undefined' ? '' : 'http://localhost:8000');
++const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? (typeof window !== "undefined" ? "" : "http://localhost:8000");
+ 
+ export default function WorkspaceLoginPage() {
+   const [username, setUsername] = useState("");
+   const [password, setPassword] = useState("");
+-  const [error, setError] = useState("");
+-  const [loading, setLoading] = useState(false);
++  const [error,    setError]    = useState("");
++  const [loading,  setLoading]  = useState(false);
+   const router = useRouter();
+ 
+   const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+     setError("");
+     setLoading(true);
+-    
++
+     try {
+-      const res = await axios.post(`${API_BASE}/api/token/`, {
+-        username,
+-        password,
+-      });
+-      
+-      localStorage.setItem("access_token", res.data.access);
++      // 1. Get JWT tokens
++      const res = await axios.post(`${API_BASE}/api/token/`, { username, password });
++      localStorage.setItem("access_token",  res.data.access);
+       localStorage.setItem("refresh_token", res.data.refresh);
+-      
+-      // Clear orchestrator state on login to ensure fresh start
+       localStorage.removeItem("pagerodeo_analysis_state");
+-      
+-      // Fetch user info to check roles
++
++      // 2. Fetch user info to determine destination
+       const userRes = await axios.get(`${API_BASE}/api/user-info/`, {
+         headers: { Authorization: `Bearer ${res.data.access}` },
+       });
+-      
+-      // Track login event and identify user in PostHog
+-      captureEvent('user_logged_in', {
+-        username: username,
+-        role: userRes.data.role,
++
++      const role = userRes.data.role as string;
++
++      // 3. PostHog tracking
++      captureEvent("user_logged_in", {
++        username,
++        role,
+         timestamp: new Date().toISOString(),
+-        login_type: 'workspace',
+-      });
+-      
+-      // Identify user for PostHog analytics
+-      identifyUser(username, {
+-        role: userRes.data.role,
+-        email: userRes.data.email,
++        login_type: "workspace",
+       });
+-      
+-      // Check if there's a redirect URL (e.g., from checkout)
+-      const redirectUrl = sessionStorage.getItem('checkout_redirect');
++      identifyUser(username, { role, email: userRes.data.email });
++
++      // 4. Route based on role
++      //    is_superuser → role === 'admin' → /workspace
++      //    everyone else (students, viewers, …) → /lms
++      const redirectUrl = sessionStorage.getItem("checkout_redirect");
+       if (redirectUrl) {
+-        sessionStorage.removeItem('checkout_redirect');
++        sessionStorage.removeItem("checkout_redirect");
+         router.push(redirectUrl);
+-      } else {
+-        // Redirect to workspace (new unified dashboard)
++      } else if (role === "admin") {
+         router.push("/workspace");
++      } else {
++        router.push("/lms");
+       }
+     } catch (err: any) {
+-      setError(err.response?.data?.detail || err.response?.data?.error || "Login failed. Please check your credentials.");
++      setError(
++        err.response?.data?.detail ||
++        err.response?.data?.error ||
++        "Login failed. Please check your credentials."
++      );
+       setLoading(false);
+     }
+   };
+ 
+   return (
+-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+-      {/* Hero Section */}
+-      <SimpleHeroSection
+-        title="Workspace Login"
+-        subtitle="Sign in to access your unified workspace"
+-      />
+-
+-      {/* Main Content */}
+-      <div className="container mx-auto px-4 py-16 max-w-md">
+-        <Card className="w-full shadow-lg">
+-        <CardHeader className="space-y-1 text-center">
+-          <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
+-          <CardDescription>
+-            Enter your credentials to access your workspace
+-          </CardDescription>
+-        </CardHeader>
+-        <CardContent>
+-          <form onSubmit={handleSubmit} className="space-y-4">
+-            {error && (
+-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+-                {error}
+-              </div>
+-            )}
+-            
+-            <div className="space-y-2">
+-              <Label htmlFor="username">Username</Label>
+-              <div className="relative">
+-                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+-                <Input
+-                  id="username"
+-                  type="text"
+-                  placeholder="Enter your username"
+-                  value={username}
+-                  onChange={(e) => setUsername(e.target.value)}
+-                  className="pl-10"
+-                  required
+-                  disabled={loading}
+-                />
++    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#0F1F3A 0%,#1756C8 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
++      <div style={{ width: "100%", maxWidth: 420 }}>
++
++        {/* Logo */}
++        <div style={{ textAlign: "center", marginBottom: 32 }}>
++          <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, margin: "0 auto 12px" }}>✈</div>
++          <div style={{ fontFamily: "Georgia,serif", fontSize: 24, fontWeight: 700, color: "#fff" }}>
++            Pilot<span style={{ color: "#90cdf4" }}>FAA</span>
++          </div>
++          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", letterSpacing: "1.5px", textTransform: "uppercase", fontFamily: "monospace", marginTop: 4 }}>
++            Ground School
++          </div>
++        </div>
++
++        <Card style={{ border: "none", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
++          <CardHeader style={{ textAlign: "center", paddingBottom: 8 }}>
++            <CardTitle style={{ fontSize: 20 }}>Sign In</CardTitle>
++            <CardDescription>Enter your credentials to continue</CardDescription>
++          </CardHeader>
++          <CardContent>
++            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
++              {error && (
++                <div style={{ background: "#fee2e2", border: "1px solid #fecaca", color: "#dc2626", padding: "10px 14px", borderRadius: 7, fontSize: 13 }}>
++                  {error}
++                </div>
++              )}
++
++              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
++                <Label htmlFor="username">Username</Label>
++                <div style={{ position: "relative" }}>
++                  <User style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 16, height: 16, color: "#94a3b8" }} />
++                  <Input
++                    id="username"
++                    type="text"
++                    placeholder="Enter your username"
++                    value={username}
++                    onChange={e => setUsername(e.target.value)}
++                    style={{ paddingLeft: 34 }}
++                    required
++                    disabled={loading}
++                  />
++                </div>
+               </div>
+-            </div>
+-            
+-            <div className="space-y-2">
+-              <Label htmlFor="password">Password</Label>
+-              <div className="relative">
+-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+-                <Input
+-                  id="password"
+-                  type="password"
+-                  placeholder="Enter your password"
+-                  value={password}
+-                  onChange={(e) => setPassword(e.target.value)}
+-                  className="pl-10"
+-                  required
+-                  disabled={loading}
+-                />
++
++              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
++                <Label htmlFor="password">Password</Label>
++                <div style={{ position: "relative" }}>
++                  <Lock style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 16, height: 16, color: "#94a3b8" }} />
++                  <Input
++                    id="password"
++                    type="password"
++                    placeholder="Enter your password"
++                    value={password}
++                    onChange={e => setPassword(e.target.value)}
++                    style={{ paddingLeft: 34 }}
++                    required
++                    disabled={loading}
++                  />
++                </div>
+               </div>
++
++              <Button
++                type="submit"
++                disabled={loading}
++                style={{ background: "#1756C8", color: "#fff", marginTop: 4 }}
++              >
++                {loading ? (
++                  <><div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginRight: 8 }} />Signing in…</>
++                ) : (
++                  <><LogIn style={{ width: 16, height: 16, marginRight: 6 }} />Sign In</>
++                )}
++              </Button>
++            </form>
++
++            <div style={{ marginTop: 20, textAlign: "center", fontSize: 13, color: "#64748b" }}>
++              <Link href="/" style={{ color: "#1756C8", textDecoration: "none" }}>← Back to homepage</Link>
+             </div>
+-            
+-            <Button 
+-              type="submit" 
+-              className="w-full bg-palette-primary hover:bg-palette-primary-hover"
+-              disabled={loading}
+-            >
+-              {loading ? (
+-                <>
+-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+-                  Signing in...
+-                </>
+-              ) : (
+-                <>
+-                  <LogIn className="mr-2 h-4 w-4" />
+-                  Sign In to Workspace
+-                </>
+-              )}
+-            </Button>
+-          </form>
+-          
+-          <div className="mt-6 text-center">
+-            <p className="text-sm text-gray-600">
+-              Don't have an account?{" "}
+-              <Link href="/register" className="text-palette-primary hover:underline font-medium inline-flex items-center gap-1">
+-                <UserPlus className="h-4 w-4" />
+-                Sign Up
+-              </Link>
+-            </p>
+-          </div>
+-        </CardContent>
+-      </Card>
++          </CardContent>
++        </Card>
+       </div>
++
++      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+     </div>
+   );
+ }
+-
+-- 
+2.43.0
