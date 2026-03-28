@@ -10,6 +10,12 @@ const resolveMx = promisify(dns.resolveMx)
 const resolveTxt = promisify(dns.resolveTxt)
 const resolveNs = promisify(dns.resolveNs)
 
+/** Node.js peer cert DN attributes may be `string` or `string[]`. */
+function dnString(value: string | string[] | undefined): string | undefined {
+  if (value == null) return undefined
+  return Array.isArray(value) ? value[0] : value
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { domain } = await request.json()
@@ -159,10 +165,11 @@ async function checkSslCertificate(domain: string): Promise<any> {
         if (cert.issuer) {
           if (typeof cert.issuer === 'string') {
             issuer = cert.issuer
-          } else if (cert.issuer.CN) {
-            issuer = cert.issuer.CN
-          } else if (cert.issuer.O) {
-            issuer = cert.issuer.O
+          } else {
+            const fromCn = dnString(cert.issuer.CN)
+            const fromO = dnString(cert.issuer.O)
+            if (fromCn) issuer = fromCn
+            else if (fromO) issuer = fromO
           }
         }
 
@@ -183,7 +190,7 @@ async function checkSslCertificate(domain: string): Promise<any> {
           protocol: protocol || "Unknown",
           cipher: cipher?.name || "Unknown",
           keySize: keySize || 2048, // Default fallback
-          subject: cert.subject?.CN || domain,
+          subject: (cert.subject && typeof cert.subject !== 'string' ? dnString(cert.subject.CN) : undefined) || domain,
           serialNumber: cert.serialNumber || "Unknown",
           fingerprint: cert.fingerprint || "Unknown",
           altNames: cert.subjectaltname ? cert.subjectaltname.split(', ').map(name => name.replace('DNS:', '')) : [],
