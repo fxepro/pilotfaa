@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -378,8 +379,9 @@ EMAIL_USE_SSL = False  # Use TLS instead of SSL for port 587
 EMAIL_TIMEOUT = 30
 
 # Default FROM email address
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER or 'noreply@adminrodeo.com')
-SERVER_EMAIL = config('SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
+DEFAULT_FROM_EMAIL  = "PilotFAA <noreply@pilotfaa.com>"
+SERVER_EMAIL        = "noreply@pilotfaa.com"    # for error emails to admins
+SUPPORT_EMAIL       = "support@pilotfaa.com"
 
 # Amazon SES Configuration (when using anymail.backends.amazon_ses.EmailBackend)
 # AWS credentials can be provided via environment variables or IAM role
@@ -444,12 +446,12 @@ SIMPLE_JWT = {
 }
 
 # API Documentation
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'PageRodeo API',
-    'DESCRIPTION': 'User Management and Performance Testing API',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-}
+# SPECTACULAR_SETTINGS = {
+#     'TITLE': 'PageRodeo API',
+#     'DESCRIPTION': 'User Management and Performance Testing API',
+#     'VERSION': '1.0.0',
+#     'SERVE_INCLUDE_SCHEMA': False,
+# }
 
 # PostHog Analytics Configuration
 # Import PostHog config (will be None if not configured)
