@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
 import { usePilotFAA, type ViewId } from '@/contexts/PilotFAAContext'
+import { PilotFAABrandContent } from '@/components/pilotfaa-brand'
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -90,15 +91,13 @@ export default function LMSSidebar() {
   return (
     <aside className="pf-sidebar">
       {/* Logo */}
-      <div className="pf-logo">
-        <div className="pf-logo-mark">✈</div>
-        <div>
-          <div className="pf-logo-text">
-            Pilot<em>FAA</em>
-          </div>
-          <div className="pf-logo-sub">Aviation Ground School</div>
-        </div>
-      </div>
+      <Link href="/" className="pf-logo no-underline text-inherit hover:opacity-95 transition-opacity">
+        <PilotFAABrandContent
+          width={128}
+          height={32}
+          taglineClassName="text-[10px] text-[var(--pf-ink-dim)]"
+        />
+      </Link>
 
       {/* Course switcher */}
       <div style={{ position: 'relative', margin: '12px 12px 0' }} ref={dropRef}>

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { PilotFAABrandContent } from "@/components/pilotfaa-brand";
 
 const COURSES = [
   { emoji: "✈️", name: "Private Pilot",    sub: "Fixed-Wing", ref: "PHAK FAA-H-8083-25C", lessons: 60, hours: "40h", color: "#1756C8" },
@@ -46,19 +47,12 @@ export default function HomePage() {
         flexWrap: "wrap",
         gap: 8,
       }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 9,
-            background: "linear-gradient(135deg,#1756C8,#4A7AE0)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 18, flexShrink: 0,
-          }}>✈</div>
-          <span style={{ fontWeight: 800, fontSize: 19, color: "#0F1F3A", letterSpacing: "-0.3px" }}>
-            Pilot<span style={{ color: "#1756C8" }}>FAA</span>
-          </span>
-          <span style={{ fontSize: 10, color: "#7A90AE", letterSpacing: "1.5px", textTransform: "uppercase" as const, fontFamily: "monospace" }}>
-            Ground School
-          </span>
+        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <PilotFAABrandContent
+            width={132}
+            height={34}
+            taglineClassName="text-[10px] text-slate-500"
+          />
         </Link>
 
         <button

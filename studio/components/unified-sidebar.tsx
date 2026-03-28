@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PilotFAABrandContent, PILOTFAA_TAGLINE } from "@/components/pilotfaa-brand";
 import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { 
@@ -202,23 +203,18 @@ export function UnifiedSidebar({ navigation, currentPath, collapsed = false, onT
         collapsed ? "justify-center p-4" : "justify-between px-4 py-5"
       )}>
         {!collapsed && (
-          <Link href="/" className="flex items-center gap-2.5 no-underline group">
-            <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg shadow-sm"
-              style={{ background: "linear-gradient(135deg,#1756C8,#4A7AE0)" }}
-            >
-              ✈
-            </span>
-            <span className="flex flex-col leading-tight">
-              <span className="font-semibold text-[#0F1F3A] text-[17px] tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                Pilot<span className="text-[#1756C8]">FAA</span>
-              </span>
-              <span className="text-[9px] uppercase tracking-[1.2px] text-slate-500 font-mono">Admin</span>
-            </span>
+          <Link href="/" className="flex min-w-0 items-center no-underline group">
+            <PilotFAABrandContent
+              width={100}
+              height={28}
+              className="min-w-0 max-w-[calc(100%-2.5rem)]"
+              imageClassName="max-h-7 w-auto max-w-[min(100%,7rem)]"
+              taglineClassName="text-[9px] leading-tight text-slate-500 sm:text-[10px]"
+            />
           </Link>
         )}
         {collapsed && (
-          <Link href="/" className="flex items-center justify-center no-underline" title="PilotFAA">
+          <Link href="/" className="flex items-center justify-center no-underline" title={`PilotFAA — ${PILOTFAA_TAGLINE}`}>
             <span
               className="flex h-10 w-10 items-center justify-center rounded-lg text-xl"
               style={{ background: "linear-gradient(135deg,#1756C8,#4A7AE0)" }}

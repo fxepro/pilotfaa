@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { PilotFAABrandContent } from "@/components/pilotfaa-brand";
 import { cn } from "@/lib/utils";
 import {
   Home,
@@ -70,15 +71,19 @@ export default function UserSidebar({ currentPath, collapsed = false, onToggle }
       {/* Fixed Logo Header */}
       <div className={cn("flex-shrink-0 flex items-center border-b border-gray-200", collapsed ? "justify-center p-4" : "justify-between p-6")}>
         <Link href="/" className={cn("flex items-center", collapsed ? "justify-center" : "")}>
-          <Image 
-            src="/adminrodeo-Logo-BIG-BLACK.png" 
-            alt="Admin Rodeo Logo" 
-            width={collapsed ? 40 : 160} 
-            height={collapsed ? 40 : 40}
-            className="object-contain"
-            priority
-            unoptimized
-          />
+          {collapsed ? (
+            <Image
+              src="/pilotfaa-wordmark.png"
+              alt="PilotFAA"
+              width={40}
+              height={40}
+              className="object-contain"
+              priority
+              unoptimized
+            />
+          ) : (
+            <PilotFAABrandContent width={140} height={36} />
+          )}
         </Link>
         <button
           type="button"

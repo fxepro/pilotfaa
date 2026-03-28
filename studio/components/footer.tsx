@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link"
 import { Facebook, Twitter } from "lucide-react"
-import Image from "next/image"
+import { PilotFAABrandContent } from "@/components/pilotfaa-brand"
 import { useTranslation } from "react-i18next"
 
 export function Footer() {
@@ -13,12 +13,10 @@ export function Footer() {
         {/* Brand Section */}
         <div className="mb-8">
           <div className="flex items-center mb-6">
-            <Image 
-              src="/adminrodeo-Logo-BIG-White.png" 
-              alt="Admin Rodeo Logo" 
-              width={300} 
-              height={72}
-              className="object-contain"
+            <PilotFAABrandContent
+              width={260}
+              height={56}
+              taglineClassName="text-white/90"
             />
           </div>
           <p className="text-white/80 max-w-md leading-relaxed">

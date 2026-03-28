@@ -3,8 +3,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Activity, BarChart3, Zap, Shield, Code, Link2, Gauge, Eye, Lock, FileText, Menu, X, Server, Type, CreditCard, Search, Database } from "lucide-react";
-import Image from "next/image";
 import { useState } from "react";
+import { PilotFAABrandContent } from "@/components/pilotfaa-brand";
 import { useTranslation } from "react-i18next";
 
 export function MainNavigation() {
@@ -20,15 +20,13 @@ export function MainNavigation() {
           <div className="flex items-center flex-shrink-0">
             <Link href="/" className={cn(
               "group relative",
-              pathname === "/" && "after:absolute after:bottom-[-10px] after:left-0 after:right-0 after:h-1 after:bg-palette-primary after:rounded-full after:animate-pulse"
+              pathname === "/" && "after:absolute after:bottom-[-6px] after:left-0 after:right-0 after:h-1 after:bg-palette-primary after:rounded-full after:animate-pulse"
             )}>
-              <Image 
-                src="/adminrodeo-Logo-BIG-BLACK.png" 
-                alt="Admin Rodeo Logo" 
-                width={160} 
-                height={40}
+              <PilotFAABrandContent
+                width={140}
+                height={36}
                 className={cn(
-                  "object-contain transition-all duration-300",
+                  "transition-opacity duration-300",
                   pathname === "/" ? "opacity-100" : "group-hover:opacity-90"
                 )}
               />

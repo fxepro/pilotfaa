@@ -4,8 +4,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Activity, BarChart3, Zap, Shield, Code, Brain, Link2, MessageCircle, Gauge, Eye, Lock, FileText, Menu, X, Server, Type, CreditCard, Search } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import { PilotFAABrandContent } from "@/components/pilotfaa-brand";
 
 // Use relative URL in production (browser), localhost in dev (SSR)
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? (typeof window !== 'undefined' ? '' : 'http://localhost:8000');
@@ -99,12 +99,10 @@ export function Navigation() {
           {/* Left side - Logo */}
           <div className="flex items-center flex-shrink-0">
             <Link href="/" className="group">
-              <Image 
-                src="/adminrodeo-Logo-BIG-BLACK.png" 
-                alt="Admin Rodeo Logo" 
-                width={160} 
-                height={40}
-                className="object-contain group-hover:opacity-90 transition-opacity duration-300"
+              <PilotFAABrandContent
+                width={150}
+                height={38}
+                className="group-hover:opacity-90 transition-opacity duration-300"
               />
             </Link>
           </div>

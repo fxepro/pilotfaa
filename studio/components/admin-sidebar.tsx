@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { PilotFAABrandContent } from "@/components/pilotfaa-brand";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -96,15 +96,9 @@ export default function AdminSidebar({ currentPath }: AdminSidebarProps) {
     <aside className="fixed left-0 top-0 w-64 h-screen bg-gradient-to-b from-slate-100 to-slate-200/80 backdrop-blur-sm border-r border-slate-300/50 overflow-y-auto">
       <div className="p-6 space-y-8">
         {/* Logo */}
-        <div className="flex items-center space-x-3">
-          <Image
-            src="/adminrodeo-Logo-BIG-BLACK.png"
-            alt="Admin Rodeo Logo"
-            width={120}
-            height={30}
-            className="object-contain"
-          />
-        </div>
+        <Link href="/" className="block">
+          <PilotFAABrandContent width={128} height={32} />
+        </Link>
 
         {/* Admin Panel Navigation */}
         <div>

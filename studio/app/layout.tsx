@@ -54,11 +54,8 @@ export const metadata: Metadata = {
   title: "PilotFAA",
   description: "FAA-grounded aviation ground school — lessons, quizzes, and progress tracking.",
   icons: {
-    icon: [
-      { url: '/favicon_io/icons8-favicon-64.png', sizes: '64x64', type: 'image/png' },
-      { url: '/favicon_io/icons8-favicon-96.png', sizes: '96x96', type: 'image/png' },
-    ],
-    apple: [{ url: '/favicon_io/icons8-favicon-96.png', sizes: '96x96', type: 'image/png' }],
+    icon: [{ url: '/favicon_io/pilotfaa-favicon.png', type: 'image/png' }],
+    apple: [{ url: '/favicon_io/pilotfaa-favicon.png', type: 'image/png' }],
   },
   manifest: '/site.webmanifest',
 }
@@ -71,9 +68,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" type="image/png" sizes="64x64" href="/favicon_io/icons8-favicon-64.png" />
-        <link rel="icon" type="image/png" sizes="96x96" href="/favicon_io/icons8-favicon-96.png" />
-        <link rel="apple-touch-icon" href="/favicon_io/icons8-favicon-96.png" />
+        <link rel="icon" type="image/png" href="/favicon_io/pilotfaa-favicon.png" />
+        <link rel="apple-touch-icon" href="/favicon_io/pilotfaa-favicon.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#1756C8" />
       </head>

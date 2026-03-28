@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft, Search } from "lucide-react";
-import Image from "next/image";
+import { PilotFAABrandContent } from "@/components/pilotfaa-brand";
 
 export default function NotFound() {
   return (
@@ -12,13 +12,11 @@ export default function NotFound() {
         <div className="max-w-2xl mx-auto text-center">
           {/* Logo */}
           <div className="mb-8 flex justify-center">
-            <Link href="/">
-              <Image 
-                src="/Pagerodeo-Logo-Black.png" 
-                alt="PageRodeo Logo" 
-                width={200} 
-                height={50}
-                className="object-contain hover:opacity-90 transition-opacity duration-300"
+            <Link href="/" className="hover:opacity-90 transition-opacity duration-300">
+              <PilotFAABrandContent
+                width={180}
+                height={44}
+                className="items-center"
               />
             </Link>
           </div>
