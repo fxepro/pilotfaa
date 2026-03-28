@@ -220,13 +220,6 @@ WORKSPACE_NAV_SECTIONS = [
         "icon": "Tool",
         "items": [
             {
-                "id": "performance",
-                "title": "Performance",
-                "href": "/workspace/performance",
-                "icon": "Gauge",
-                "permission": "performance.view",
-            },
-            {
                 "id": "monitoring",
                 "title": "Monitoring",
                 "href": "/workspace/monitoring",

@@ -61,28 +61,13 @@ export default function NotFound() {
           <div className="mt-12 pt-8 border-t border-slate-200">
             <p className="text-sm text-slate-600 mb-4">Or try one of these popular pages:</p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link 
-                href="/performance" 
-                className="text-sm text-palette-primary hover:underline"
-              >
-                Performance
+              <Link href="/" className="text-sm text-palette-primary hover:underline">
+                Home
               </Link>
-              <Link 
-                href="/monitor" 
-                className="text-sm text-palette-primary hover:underline"
-              >
-                Monitor
+              <Link href="/lms" className="text-sm text-palette-primary hover:underline">
+                Ground school
               </Link>
-              <Link 
-                href="/upgrade" 
-                className="text-sm text-palette-primary hover:underline"
-              >
-                Upgrade
-              </Link>
-              <Link 
-                href="/workspace" 
-                className="text-sm text-palette-primary hover:underline"
-              >
+              <Link href="/workspace" className="text-sm text-palette-primary hover:underline">
                 Workspace
               </Link>
             </div>

@@ -175,20 +175,11 @@ export function UnifiedSidebar({ navigation, currentPath, collapsed = false, onT
     })
   }));
 
-  // DEPRECATED: Site Audit functionality removed
-  // Site audit app has been deprecated - all related code removed
-
   // Debug in development
   if (process.env.NODE_ENV === 'development') {
     console.log('Sidebar - Navigation sections:', navigation.sections.length);
     console.log('Sidebar - Filtered sections:', transformedSections.length);
     console.log('Sidebar - Permissions:', permissions.length);
-    console.log('Sidebar - Full navigation:', JSON.stringify(navigation, null, 2));
-    // Check for site-audit specifically
-    const allItems = navigation.sections.flatMap(s => s.items || []);
-    const siteAuditItem = allItems.find(item => item.id === 'site_audit');
-    console.log('Sidebar - Site Audit item:', siteAuditItem);
-    console.log('Sidebar - All items:', allItems.map(i => ({ id: i.id, title: i.title, href: i.href })));
   }
 
   return (

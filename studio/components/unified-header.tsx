@@ -57,8 +57,6 @@ export function UnifiedHeader({ user, sidebarCollapsed, onToggleSidebar, navigat
       '/workspace/login': 'Login',
       '/workspace/profile': 'Profile',
       '/workspace/settings': 'Settings',
-      // '/workspace/site-audit': 'Site Audit', // DEPRECATED
-      '/workspace/performance': 'Performance',
       '/workspace/monitoring': 'Monitoring',
       '/workspace/reports': 'Reports',
       '/workspace/users': 'User Management',

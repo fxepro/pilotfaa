@@ -6,7 +6,6 @@ import { PilotFAABrandContent } from "@/components/pilotfaa-brand";
 import { cn } from "@/lib/utils";
 import {
   Home,
-  Gauge,
   ChevronRight,
   ChevronLeft,
   BarChart3,
@@ -35,12 +34,6 @@ export default function UserSidebar({ currentPath, collapsed = false, onToggle }
     //   icon: Search,
     //   description: "Comprehensive site analysis"
     // },
-    {
-      title: "Performance",
-      href: "/dashboard/performance",
-      icon: Gauge,
-      description: "Performance metrics and analysis"
-    },
     {
       title: "Monitoring",
       href: "/dashboard/monitoring",

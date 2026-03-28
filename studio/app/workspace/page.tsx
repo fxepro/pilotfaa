@@ -287,21 +287,6 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* DEPRECATED: Site Audit removed */}
-            {/* <Link href="/workspace/site-audit">
-              <div className="bg-gradient-to-r from-palette-primary to-palette-primary-hover text-white rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-white/20 rounded-lg">
-                    <FileText className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{t('dashboard.siteAudit')}</h3>
-                    <p className="text-sm text-white/90">{t('dashboard.siteAuditDesc')}</p>
-                  </div>
-                </div>
-              </div>
-            </Link> */}
-
             <Link href="/workspace/monitoring">
               <div className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="flex items-center space-x-3">

@@ -88,7 +88,7 @@ export default function TutorView() {
                 key={msg.id}
                 className={`pf-msg${msg.role === 'user' ? ' pf-user' : ''}`}
               >
-                <div className={`pf-msg-av ${msg.role === 'ai' || msg.role === 'assistant' ? 'pf-ai-av' : 'pf-user-av'}`}>
+                <div className={`pf-msg-av ${msg.role === 'assistant' ? 'pf-ai-av' : 'pf-user-av'}`}>
                   {msg.role === 'assistant' ? '🧑‍✈️' : 'AJ'}
                 </div>
                 <div className="pf-msg-bbl">
