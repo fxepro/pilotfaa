@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * Test endpoint to simulate different error types
- * Usage: POST /api/test-errors with { errorType: "dns" | "timeout" | "forbidden" | "notfound" | "ratelimit" | "server" | "auth" }
+ * Usage: POST /api/_deprecated-test-errors with { errorType: "dns" | "timeout" | "forbidden" | "notfound" | "ratelimit" | "server" | "auth" }
  */
 export async function POST(request: NextRequest) {
   try {

@@ -8,29 +8,31 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Clock, 
+import {
+  Mail,
+  Clock,
   Send,
-  MessageSquare,
   CheckCircle,
-  ArrowRight,
   Globe,
   Users,
-  Headphones
+  Headphones,
+  BookOpen,
+  Plane,
 } from "lucide-react"
 
-// Use relative URL in production (browser), localhost in dev (SSR)
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? (typeof window !== 'undefined' ? '' : 'http://localhost:8000');
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  (typeof window !== "undefined" ? "" : "http://localhost:8000")
+
+const CONTACT_EMAIL =
+  process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || "support@pilotfaa.com"
 
 export function ContactMain() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     subject: "",
-    message: ""
+    message: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
@@ -38,34 +40,29 @@ export function ContactMain() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
+
     try {
-      // Send to Django backend
       const response = await fetch(`${API_BASE}/api/contact/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       })
-      
+
       const result = await response.json()
-      
+
       if (response.ok && result.success) {
         toast({
-          title: "Message Sent!",
-          description: "Thank you for contacting us. We'll get back to you within 24 hours.",
+          title: "Message sent",
+          description: "Thanks for reaching out. We typically reply within one business day.",
         })
-        
-        // Reset form
         setFormData({ name: "", email: "", subject: "", message: "" })
       } else {
-        throw new Error(result.error || 'Failed to send message')
+        throw new Error(result.error || "Failed to send message")
       }
-    } catch (error) {
+    } catch {
       toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
+        title: "Something went wrong",
+        description: "We could not send your message. Please try again or email us directly.",
         variant: "destructive",
       })
     } finally {
@@ -73,136 +70,124 @@ export function ContactMain() {
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   return (
     <div className="min-h-screen overflow-x-hidden">
-      {/* Hero Section */}
-      <section className="relative min-h-[50vh] flex items-center justify-center bg-gradient-to-br from-palette-accent-2 via-palette-accent-1 to-palette-primary">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -inset-10 opacity-35">
-            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-palette-primary-hover rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse"></div>
-            <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-purple-800 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-pulse animation-delay-2000"></div>
-            <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-palette-primary rounded-full mix-blend-multiply filter blur-2xl opacity-55 animate-pulse animation-delay-4000"></div>
+      <section className="relative min-h-[44vh] flex items-center justify-center bg-gradient-to-br from-[#0F1F3A] via-[#1756C8] to-[#4A7AE0]">
+        <div className="absolute inset-0 overflow-hidden opacity-40">
+          <div className="absolute -inset-10">
+            <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-white/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-sky-300/30 rounded-full blur-3xl" />
           </div>
         </div>
-        
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:100px_100px]"></div>
-        
-        <div className="relative z-10 container mx-auto px-4 text-center">
-          <div className="mb-8">
-            <Badge variant="outline" className="border-white/40 text-white bg-white/15 backdrop-blur-sm px-6 py-2 text-sm font-medium shadow-lg">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Get in Touch
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:72px_72px]" />
+
+        <div className="relative z-10 container mx-auto px-4 text-center max-w-3xl">
+          <div className="mb-6">
+            <Badge
+              variant="outline"
+              className="border-white/35 text-white bg-white/10 backdrop-blur-sm px-4 py-1.5 text-sm"
+            >
+              <Plane className="h-3.5 w-3.5 mr-2 inline" />
+              PilotFAA
             </Badge>
           </div>
-          
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Contact Us
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+            Contact us
           </h1>
-          
-          <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8 leading-relaxed">
-            Have questions about our services? Need help with your website performance? 
-            We're here to help you succeed.
+          <p className="text-lg text-white/90 leading-relaxed">
+            Questions about courses, your account, or how we cite FAA sources? Send a note—we are
+            happy to help student pilots and instructors.
           </p>
         </div>
       </section>
 
-      {/* Main Content */}
-      <div className="bg-gradient-to-br from-palette-accent-3 via-white to-palette-accent-3">
-        <div className="container mx-auto px-4 py-16 max-w-7xl">
-          
-          {/* Contact Form & Info */}
-          <div className="grid lg:grid-cols-2 gap-12 mb-16">
-            {/* Contact Form */}
-            <Card className="border-palette-accent-2/50 shadow-lg">
+      <div className="bg-gradient-to-b from-slate-50 to-white">
+        <div className="container mx-auto px-4 py-14 max-w-6xl">
+          <div className="grid lg:grid-cols-2 gap-10 mb-14">
+            <Card className="border-slate-200/80 shadow-md">
               <CardHeader>
-                <CardTitle className="text-slate-800 flex items-center gap-2">
-                  <Send className="h-5 w-5 text-palette-primary" />
-                  Send us a Message
+                <CardTitle className="text-slate-900 flex items-center gap-2 text-xl">
+                  <Send className="h-5 w-5 text-[#1756C8]" />
+                  Send a message
                 </CardTitle>
                 <CardDescription className="text-slate-600">
-                  Fill out the form below and we'll get back to you within 24 hours
+                  Tell us what you need. We read every message.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Name *</Label>
+                      <Label htmlFor="name">Name</Label>
                       <Input
                         id="name"
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
-                        placeholder="Your full name"
+                        placeholder="Your name"
                         required
-                        className="border-palette-accent-2 focus:border-palette-accent-2"
+                        className="border-slate-200"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
+                      <Label htmlFor="email">Email</Label>
                       <Input
                         id="email"
                         name="email"
                         type="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        placeholder="your@email.com"
+                        placeholder="you@example.com"
                         required
-                        className="border-palette-accent-2 focus:border-palette-accent-2"
+                        className="border-slate-200"
                       />
                     </div>
                   </div>
-                  
                   <div className="space-y-2">
-                    <Label htmlFor="subject">Subject *</Label>
+                    <Label htmlFor="subject">Subject</Label>
                     <Input
                       id="subject"
                       name="subject"
                       value={formData.subject}
                       onChange={handleInputChange}
-                      placeholder="What's this about?"
+                      placeholder="e.g. Private pilot course, billing, technical issue"
                       required
-                      className="border-palette-accent-2 focus:border-palette-accent-2"
+                      className="border-slate-200"
                     />
                   </div>
-                  
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message *</Label>
+                    <Label htmlFor="message">Message</Label>
                     <Textarea
                       id="message"
                       name="message"
                       value={formData.message}
                       onChange={handleInputChange}
-                      placeholder="Tell us how we can help you..."
+                      placeholder="How can we help?"
                       rows={6}
                       required
-                      className="border-palette-accent-2 focus:border-palette-accent-2"
+                      className="border-slate-200 resize-y min-h-[140px]"
                     />
                   </div>
-                  
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-palette-primary to-palette-primary-hover hover:from-purple-700 hover:to-palette-secondary text-white shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
+                    className="w-full bg-[#1756C8] hover:bg-[#1347a8] text-white"
                   >
                     {isSubmitting ? (
                       <>
-                        <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                        Sending...
+                        <span className="h-4 w-4 mr-2 inline-block animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Sending…
                       </>
                     ) : (
                       <>
                         <Send className="h-4 w-4 mr-2" />
-                        Send Message
+                        Send message
                       </>
                     )}
                   </Button>
@@ -210,81 +195,78 @@ export function ContactMain() {
               </CardContent>
             </Card>
 
-            {/* Contact Information */}
-            <div className="space-y-8">
-              <Card className="border-palette-accent-2/50 shadow-lg">
+            <div className="space-y-6">
+              <Card className="border-slate-200/80 shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-slate-800 flex items-center gap-2">
-                    <Headphones className="h-5 w-5 text-palette-primary" />
-                    Contact Information
+                  <CardTitle className="text-slate-900 flex items-center gap-2 text-xl">
+                    <Headphones className="h-5 w-5 text-[#1756C8]" />
+                    Reach us
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-palette-accent-3 flex items-center justify-center">
-                      <Mail className="h-5 w-5 text-palette-primary" />
+                    <div className="h-10 w-10 rounded-lg bg-sky-50 flex items-center justify-center shrink-0">
+                      <Mail className="h-5 w-5 text-[#1756C8]" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-800">Email</h4>
-                      <p className="text-slate-600">contact@pagerodeo.com</p>
-                      <p className="text-sm text-slate-500">We respond within 24 hours</p>
+                      <h4 className="font-semibold text-slate-900">Email</h4>
+                      <a
+                        href={`mailto:${CONTACT_EMAIL}`}
+                        className="text-[#1756C8] hover:underline"
+                      >
+                        {CONTACT_EMAIL}
+                      </a>
+                      <p className="text-sm text-slate-500 mt-1">
+                        Best for account help, course questions, and partnerships.
+                      </p>
                     </div>
                   </div>
-                  
                   <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-palette-accent-3 flex items-center justify-center">
-                      <Clock className="h-5 w-5 text-palette-primary" />
+                    <div className="h-10 w-10 rounded-lg bg-sky-50 flex items-center justify-center shrink-0">
+                      <Clock className="h-5 w-5 text-[#1756C8]" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-800">Business Hours</h4>
-                      <p className="text-slate-600">Monday - Friday: 9:00 AM - 6:00 PM</p>
-                      <p className="text-slate-600">Saturday: 10:00 AM - 4:00 PM</p>
-                      <p className="text-sm text-slate-500">EST Time Zone</p>
+                      <h4 className="font-semibold text-slate-900">Response time</h4>
+                      <p className="text-slate-600 text-sm">
+                        We aim to reply within one business day (U.S. Eastern time).
+                      </p>
                     </div>
                   </div>
-                  
                   <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-palette-accent-3 flex items-center justify-center">
-                      <Globe className="h-5 w-5 text-palette-primary" />
+                    <div className="h-10 w-10 rounded-lg bg-sky-50 flex items-center justify-center shrink-0">
+                      <Globe className="h-5 w-5 text-[#1756C8]" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-800">Support</h4>
-                      <p className="text-slate-600">24/7 Technical Support</p>
-                      <p className="text-slate-600">Priority Support for Enterprise</p>
-                      <p className="text-sm text-slate-500">Available via email and chat</p>
+                      <h4 className="font-semibold text-slate-900">What we offer</h4>
+                      <p className="text-slate-600 text-sm">
+                        FAA-grounded ground school for Private, Instrument, and rotorcraft tracks—with
+                        lessons, quizzes, and citations to official FAA material.
+                      </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-green-200/50 shadow-lg bg-green-50/50">
+              <Card className="border-emerald-200/60 bg-emerald-50/40 shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-green-800 flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5" />
-                    Why Choose PageRodeo?
+                  <CardTitle className="text-emerald-900 flex items-center gap-2 text-lg">
+                    <BookOpen className="h-5 w-5" />
+                    Why PilotFAA
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-3 text-sm text-green-700">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>Expert performance optimization</span>
+                  <ul className="space-y-2.5 text-sm text-emerald-900/90">
+                    <li className="flex gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <span>Content tied to PHAK, ACS, FAR/AIM, and related FAA publications.</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>AI-powered insights and recommendations</span>
+                    <li className="flex gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <span>Quizzes and study paths aligned to knowledge test prep—not generic trivia.</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>Comprehensive monitoring solutions</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>24/7 technical support</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>Enterprise-grade security</span>
+                    <li className="flex gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <span>Clear citations so you can verify every teaching point at the source.</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -292,45 +274,62 @@ export function ContactMain() {
             </div>
           </div>
 
-          {/* FAQ Section */}
-          <Card className="border-palette-accent-2/50 shadow-lg">
+          <Card className="border-slate-200/80 shadow-md">
             <CardHeader>
-              <CardTitle className="text-slate-800 flex items-center gap-2">
-                <Users className="h-5 w-5 text-palette-primary" />
-                Frequently Asked Questions
+              <CardTitle className="text-slate-900 flex items-center gap-2 text-xl">
+                <Users className="h-5 w-5 text-[#1756C8]" />
+                Common questions
               </CardTitle>
               <CardDescription className="text-slate-600">
-                Quick answers to common questions
+                Quick answers before you write in
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-8 text-sm">
+                <div className="space-y-5">
                   <div>
-                    <h4 className="font-semibold text-slate-800 mb-2">How quickly do you respond?</h4>
-                    <p className="text-slate-600 text-sm">We typically respond to all inquiries within 24 hours during business days.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Is this a substitute for a flight school?</h4>
+                    <p className="text-slate-600">
+                      No. PilotFAA supports ground training and knowledge test preparation. You still need
+                      a certificated instructor and practical training for your certificate or rating.
+                    </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-800 mb-2">Do you offer free consultations?</h4>
-                    <p className="text-slate-600 text-sm">Yes! We offer free initial consultations to discuss your specific needs and how we can help.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Where do lessons come from?</h4>
+                    <p className="text-slate-600">
+                      We ground lessons and explanations in official FAA documents (e.g. PHAK, ACS) and
+                      show citations so you can read the original text.
+                    </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-800 mb-2">What services do you provide?</h4>
-                    <p className="text-slate-600 text-sm">We offer website performance testing, monitoring, SSL checks, sitemap generation, and AI-powered analysis.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Login or billing issues?</h4>
+                    <p className="text-slate-600">
+                      Email us with the address you use to sign in and a short description. We will
+                      help you get back into your account or correct a charge.
+                    </p>
                   </div>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
-                    <h4 className="font-semibold text-slate-800 mb-2">Do you work with small businesses?</h4>
-                    <p className="text-slate-600 text-sm">Absolutely! We work with businesses of all sizes, from startups to enterprise companies.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Do you offer refunds?</h4>
+                    <p className="text-slate-600">
+                      Refund rules depend on your plan and timing. Mention your purchase date in your
+                      message and we will follow your applicable policy.
+                    </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-800 mb-2">Can you help with existing websites?</h4>
-                    <p className="text-slate-600 text-sm">Yes, we can analyze and optimize existing websites to improve their performance and user experience.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Feature requests or bugs</h4>
+                    <p className="text-slate-600">
+                      We welcome feedback. Include your browser, device, and steps to reproduce if
+                      something is broken—we prioritize fixes that affect studying and assessments.
+                    </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-slate-800 mb-2">What's your pricing model?</h4>
-                    <p className="text-slate-600 text-sm">We offer flexible pricing plans. Contact us for a customized quote based on your specific needs.</p>
+                    <h4 className="font-semibold text-slate-900 mb-1">Press or partnerships</h4>
+                    <p className="text-slate-600">
+                      Use the form with subject line “Partnership” or “Media.” We will route it to the
+                      right person.
+                    </p>
                   </div>
                 </div>
               </div>

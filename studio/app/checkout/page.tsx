@@ -2,12 +2,22 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, CheckCircle, Loader2, ArrowLeft, Lock, Shield } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CreditCard, CheckCircle, Loader2, ArrowLeft, Lock, Shield, UserPlus } from "lucide-react";
 import axios from "axios";
+import {
+  PILOTFAA_DEFAULT_CHECKOUT_DISPLAY,
+  PILOTFAA_DEFAULT_CHECKOUT_PLAN,
+  pilotfaaCheckoutCourseDisplay,
+  pilotfaaCheckoutIntroPrice,
+  pilotfaaCheckoutRegularPrice,
+} from "@/lib/pilotfaa-marketing";
 
 // Use relative URL in production (browser), localhost in dev (SSR)
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? (typeof window !== 'undefined' ? 'http://localhost:8000' : 'http://localhost:8000');
@@ -16,6 +26,8 @@ interface PlanInfo {
   name: string;
   price: number;
   billingPeriod: 'monthly' | 'annual';
+  /** Strikethrough “regular” list price for display (introductory checkout only). */
+  listPrice?: number;
 }
 
 interface DealInfo {
@@ -52,29 +64,38 @@ function CheckoutContent() {
   const [coinbaseError, setCoinbaseError] = useState<string | null>(null);
   const [stripeError, setStripeError] = useState<string | null>(null);
   const [paypalSDKLoaded, setPaypalSDKLoaded] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
+  const [sessionResolved, setSessionResolved] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [regForm, setRegForm] = useState({
+    first_name: "",
+    last_name: "",
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [regError, setRegError] = useState("");
+  const [regLoading, setRegLoading] = useState(false);
 
-  // Check authentication on mount
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     const refreshToken = localStorage.getItem("refresh_token");
-    
+
     if (!token) {
-      // Store the current URL to redirect back after login
-      sessionStorage.setItem('checkout_redirect', window.location.href);
-      router.push("/workspace/login");
+      setIsAuthenticated(false);
+      setSessionResolved(true);
       return;
     }
 
-    // Verify token is valid by making a test request
-    axios.get(`${API_BASE}/api/user-info/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    axios
+      .get(`${API_BASE}/api/user-info/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then(() => {
-        setAuthChecked(true);
+        setIsAuthenticated(true);
+        setSessionResolved(true);
       })
       .catch(async (err) => {
-        // If 401, try to refresh token
         if (err.response?.status === 401 && refreshToken) {
           try {
             const res = await axios.post(`${API_BASE}/api/token/refresh/`, {
@@ -85,78 +106,123 @@ function CheckoutContent() {
             if (res.data.refresh) {
               localStorage.setItem("refresh_token", res.data.refresh);
             }
-            setAuthChecked(true);
-          } catch (refreshErr) {
-            // Refresh failed, redirect to login
+            setIsAuthenticated(true);
+            setSessionResolved(true);
+          } catch {
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
-            sessionStorage.setItem('checkout_redirect', window.location.href);
-            router.push("/workspace/login");
+            setIsAuthenticated(false);
+            setSessionResolved(true);
           }
         } else {
-          // Other error or no refresh token, redirect to login
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");
-          sessionStorage.setItem('checkout_redirect', window.location.href);
-          router.push("/workspace/login");
+          setIsAuthenticated(false);
+          setSessionResolved(true);
         }
       });
-  }, [router]);
+  }, []);
 
   useEffect(() => {
-    // Only load plan/deal if authenticated
-    if (!authChecked) return;
+    const dealSlug = searchParams.get("deal");
 
-    // Check for deal parameter first
-    const dealSlug = searchParams.get('deal');
-    
     if (dealSlug) {
-      // Fetch deal details
-      axios.get(`${API_BASE}/api/deals/${dealSlug}/`)
-        .then(response => {
+      axios
+        .get(`${API_BASE}/api/deals/${dealSlug}/`)
+        .then((response) => {
           const dealData = response.data;
           if (!dealData.is_valid) {
-            alert('This deal is no longer available');
-            router.push('/upgrade');
+            alert("This deal is no longer available");
+            router.push("/courses");
             return;
           }
           setDeal(dealData);
           setBillingPeriod(dealData.billing_period);
-          // Set plan info from deal
           setPlan({
             name: dealData.base_plan.name,
             price: dealData.deal_price,
-            billingPeriod: dealData.billing_period
+            billingPeriod: dealData.billing_period,
           });
         })
-        .catch(error => {
-          console.error('Error fetching deal:', error);
-          alert('Deal not found. Redirecting to upgrade page.');
-          router.push('/upgrade');
+        .catch(() => {
+          alert("Deal not found. Redirecting to courses.");
+          router.push("/courses");
         });
-    } else {
-      // Regular plan flow
-      const planName = searchParams.get('plan');
-      const priceParam = searchParams.get('price');
-      
-      if (planName && priceParam) {
-        setPlan({
-          name: planName,
-          price: parseFloat(priceParam),
-          billingPeriod: 'monthly'
-        });
-      } else {
-        // Try to get from sessionStorage
-        const storedPlan = sessionStorage.getItem('selectedPlan');
-        if (storedPlan) {
-          setPlan(JSON.parse(storedPlan));
-        } else {
-          // Redirect back to upgrade page if no plan selected
-          router.push('/upgrade');
-        }
-      }
+      return;
     }
-  }, [searchParams, router, authChecked]);
+
+    setDeal(null);
+    const planName = searchParams.get("plan");
+    const priceParam = searchParams.get("price");
+
+    if (planName && priceParam) {
+      const listParam = searchParams.get("list");
+      setPlan({
+        name: planName,
+        price: parseFloat(priceParam),
+        listPrice: listParam ? parseFloat(listParam) : undefined,
+        billingPeriod: "monthly",
+      });
+      return;
+    }
+
+    const storedPlan =
+      typeof window !== "undefined" ? sessionStorage.getItem("selectedPlan") : null;
+    if (storedPlan) {
+      setPlan(JSON.parse(storedPlan));
+      return;
+    }
+
+    const cs = searchParams.get("course");
+    setPlan({
+      name: PILOTFAA_DEFAULT_CHECKOUT_PLAN.planName,
+      price: pilotfaaCheckoutIntroPrice(cs),
+      listPrice: pilotfaaCheckoutRegularPrice(cs),
+      billingPeriod: "monthly",
+    });
+  }, [searchParams, router]);
+
+  const handleCheckoutRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegError("");
+    if (regForm.password !== regForm.confirmPassword) {
+      setRegError("Passwords do not match");
+      return;
+    }
+    if (regForm.password.length < 8) {
+      setRegError("Password must be at least 8 characters");
+      return;
+    }
+    setRegLoading(true);
+    try {
+      await axios.post(`${API_BASE}/api/register/`, {
+        username: regForm.username,
+        email: regForm.email,
+        password: regForm.password,
+        first_name: regForm.first_name,
+        last_name: regForm.last_name,
+        role: "student",
+      });
+      const loginRes = await axios.post(`${API_BASE}/api/token/`, {
+        username: regForm.username,
+        password: regForm.password,
+      });
+      localStorage.setItem("access_token", loginRes.data.access);
+      localStorage.setItem("refresh_token", loginRes.data.refresh);
+      setIsAuthenticated(true);
+    } catch (err: unknown) {
+      const ax = err as {
+        response?: { data?: Record<string, unknown> & { error?: string; message?: string } };
+      };
+      const d = ax.response?.data;
+      if (d?.error) setRegError(String(d.error));
+      else if (d?.username) setRegError("Username already exists. Try another or sign in.");
+      else if (d?.email) setRegError("Email already registered. Sign in instead.");
+      else setRegError(d?.message || "Registration failed. Try again.");
+    } finally {
+      setRegLoading(false);
+    }
+  };
 
   // Handle Coinbase payment
   const handleCoinbasePayment = useCallback(async () => {
@@ -532,8 +598,8 @@ function CheckoutContent() {
   }, [plan, deal, billingPeriod, router]);
 
   useEffect(() => {
-    // Load PayPal SDK
-    if (activeTab === 'paypal' && typeof window !== 'undefined' && plan) {
+    // Load PayPal SDK (only after login/register so payment DOM exists)
+    if (activeTab === 'paypal' && typeof window !== 'undefined' && plan && isAuthenticated) {
       setPaypalError(null);
       
       // In Next.js, NEXT_PUBLIC_ vars are available at build time
@@ -625,28 +691,50 @@ function CheckoutContent() {
       setPaypalSDKLoaded(false);
       setPaypalError(null);
     }
-  }, [activeTab, plan, billingPeriod, renderPayPalButton]);
+  }, [activeTab, plan, billingPeriod, renderPayPalButton, isAuthenticated]);
 
   const calculatePrice = () => {
     if (!plan) return 0;
-    // If deal exists, use deal price
-    if (deal) {
-      return deal.deal_price;
-    }
-    if (billingPeriod === 'annual') {
-      return (plan.price || 0) * 12 * 0.9; // 10% discount for annual
-    }
+    if (deal) return deal.deal_price;
     return plan.price || 0;
   };
 
-  // Show loading while checking auth or loading plan/deal
-  if (!authChecked || (!plan && !deal)) {
+  const courseSlugParam = searchParams.get("course");
+  const catalogCourse = pilotfaaCheckoutCourseDisplay(courseSlugParam);
+
+  const nonDealOrderHeadline = (() => {
+    if (catalogCourse) {
+      return {
+        name: catalogCourse.name,
+        sub: catalogCourse.sub,
+        emoji: catalogCourse.emoji,
+      };
+    }
+    if (courseSlugParam) {
+      const name = courseSlugParam
+        .split("-")
+        .filter(Boolean)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ");
+      return { name, sub: "", emoji: "" };
+    }
+    if (plan && plan.name !== PILOTFAA_DEFAULT_CHECKOUT_PLAN.planName) {
+      return { name: plan.name, sub: "", emoji: "" };
+    }
+    return {
+      name: PILOTFAA_DEFAULT_CHECKOUT_DISPLAY.name,
+      sub: PILOTFAA_DEFAULT_CHECKOUT_DISPLAY.sub,
+      emoji: PILOTFAA_DEFAULT_CHECKOUT_DISPLAY.emoji,
+    };
+  })();
+
+  if (!sessionResolved || (!plan && !deal)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-palette-primary mx-auto mb-4" />
           <p className="text-slate-600">
-            {!authChecked ? 'Verifying authentication...' : 'Loading checkout...'}
+            {!sessionResolved ? "Loading…" : "Loading checkout…"}
           </p>
         </div>
       </div>
@@ -659,19 +747,19 @@ function CheckoutContent() {
         {/* Back Button */}
         <Button
           variant="ghost"
-          onClick={() => router.push('/upgrade')}
+          onClick={() => router.push('/courses')}
           className="mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Plans
+          Back to courses
         </Button>
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Order Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
-              <CardDescription>Review your selected plan</CardDescription>
+              <CardTitle>Order summary</CardTitle>
+              <CardDescription>What you are enrolling in</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Deal Badge */}
@@ -682,43 +770,36 @@ function CheckoutContent() {
                     <span className="text-sm font-semibold text-green-600">{deal.discount_percentage}% OFF</span>
                   </div>
                   <h3 className="font-semibold text-lg mb-1">{deal.name}</h3>
-                  <p className="text-sm text-slate-600">{deal.description || `${deal.base_plan.display_name} - Special Offer`}</p>
+                  <p className="text-sm text-slate-600">{deal.description || deal.base_plan.display_name}</p>
                 </div>
               )}
 
-              {/* Plan Selection */}
               <div className="p-4 bg-slate-50 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-lg">{plan?.name || deal?.base_plan?.display_name || 'Plan'} Plan</h3>
-                  <Badge variant="outline">{billingPeriod === 'monthly' ? 'Monthly' : 'Annual'}</Badge>
-                </div>
-                <p className="text-sm text-slate-600 mb-4">
-                  {deal 
-                    ? `Special deal: ${deal.billing_period === 'annual' ? 'Billed annually' : 'Billed monthly'}`
-                    : billingPeriod === 'annual' 
-                    ? 'Billed annually (10% discount)'
-                    : 'Billed monthly'}
-                </p>
-                
-                {/* Billing Period Toggle - Disabled if deal */}
-                {!deal && (
-                  <div className="flex gap-2">
-                    <Button
-                      variant={billingPeriod === 'monthly' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setBillingPeriod('monthly')}
-                      className="flex-1"
-                    >
-                      Monthly
-                    </Button>
-                    <Button
-                      variant={billingPeriod === 'annual' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setBillingPeriod('annual')}
-                      className="flex-1"
-                    >
-                      Annual <span className="ml-1 text-xs">(Save 10%)</span>
-                    </Button>
+                {deal ? (
+                  <>
+                    <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                      <h3 className="font-semibold text-lg text-slate-900">{deal.base_plan.display_name}</h3>
+                      <Badge variant="outline">
+                        {deal.billing_period === "annual" ? "Annual" : "Monthly"}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-600">
+                      {deal.billing_period === "annual" ? "Billed once per year." : "Billed each month."}
+                    </p>
+                  </>
+                ) : (
+                  <div className="flex items-start gap-3">
+                    {nonDealOrderHeadline.emoji ? (
+                      <span className="text-2xl leading-none pt-0.5" aria-hidden>
+                        {nonDealOrderHeadline.emoji}
+                      </span>
+                    ) : null}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-lg text-slate-900">{nonDealOrderHeadline.name}</h3>
+                      {nonDealOrderHeadline.sub ? (
+                        <p className="text-sm text-slate-600 mt-0.5">{nonDealOrderHeadline.sub}</p>
+                      ) : null}
+                    </div>
                   </div>
                 )}
               </div>
@@ -747,25 +828,21 @@ function CheckoutContent() {
                   </>
                 ) : (
                   <>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Subtotal</span>
-                      <span className="font-medium">${calculatePrice().toFixed(2)}</span>
-                    </div>
-                    {billingPeriod === 'annual' && plan && (
-                      <div className="flex justify-between text-sm text-green-600">
-                        <span>Annual Discount (10%)</span>
-                        <span>-${((plan.price || 0) * 12 * 0.1).toFixed(2)}</span>
+                    {plan &&
+                    plan.listPrice != null &&
+                    plan.listPrice > (plan.price || 0) ? (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-600">Regular price</span>
+                        <span className="line-through text-slate-400">
+                          ${plan.listPrice.toFixed(0)}
+                        </span>
                       </div>
-                    )}
+                    ) : null}
                     <div className="flex justify-between text-lg font-bold border-t pt-3">
-                      <span>Total</span>
-                      <span>${calculatePrice().toFixed(2)}</span>
+                      <span>Due today</span>
+                      <span className="text-green-700">${calculatePrice().toFixed(0)}</span>
                     </div>
-                    <p className="text-xs text-slate-500">
-                      {billingPeriod === 'monthly' 
-                        ? `Billed $${plan?.price?.toFixed(2) || '0.00'} per month`
-                        : `Billed $${calculatePrice().toFixed(2)} per year`}
-                    </p>
+                    <p className="text-xs text-slate-500">Taxes may apply where required.</p>
                   </>
                 )}
               </div>
@@ -778,7 +855,109 @@ function CheckoutContent() {
             </CardContent>
           </Card>
 
-          {/* Payment Methods */}
+          {!isAuthenticated ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Create your PilotFAA account</CardTitle>
+              <CardDescription>
+                Add your details below. After you register, you can complete payment on this page.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCheckoutRegister} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="pf-co-fn">First name</Label>
+                    <Input
+                      id="pf-co-fn"
+                      value={regForm.first_name}
+                      onChange={(e) => setRegForm((f) => ({ ...f, first_name: e.target.value }))}
+                      required
+                      disabled={regLoading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="pf-co-ln">Last name</Label>
+                    <Input
+                      id="pf-co-ln"
+                      value={regForm.last_name}
+                      onChange={(e) => setRegForm((f) => ({ ...f, last_name: e.target.value }))}
+                      required
+                      disabled={regLoading}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pf-co-user">Username</Label>
+                  <Input
+                    id="pf-co-user"
+                    value={regForm.username}
+                    onChange={(e) => setRegForm((f) => ({ ...f, username: e.target.value }))}
+                    required
+                    disabled={regLoading}
+                    autoComplete="username"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pf-co-email">Email</Label>
+                  <Input
+                    id="pf-co-email"
+                    type="email"
+                    value={regForm.email}
+                    onChange={(e) => setRegForm((f) => ({ ...f, email: e.target.value }))}
+                    required
+                    disabled={regLoading}
+                    autoComplete="email"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pf-co-pw">Password</Label>
+                  <Input
+                    id="pf-co-pw"
+                    type="password"
+                    value={regForm.password}
+                    onChange={(e) => setRegForm((f) => ({ ...f, password: e.target.value }))}
+                    required
+                    minLength={8}
+                    disabled={regLoading}
+                    autoComplete="new-password"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pf-co-pw2">Confirm password</Label>
+                  <Input
+                    id="pf-co-pw2"
+                    type="password"
+                    value={regForm.confirmPassword}
+                    onChange={(e) => setRegForm((f) => ({ ...f, confirmPassword: e.target.value }))}
+                    required
+                    disabled={regLoading}
+                    autoComplete="new-password"
+                  />
+                </div>
+                {regError ? <p className="text-sm text-red-600">{regError}</p> : null}
+                <Button type="submit" className="w-full" disabled={regLoading}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  {regLoading ? "Creating account…" : "Continue to payment"}
+                </Button>
+              </form>
+              <p className="text-sm text-slate-600 mt-6 text-center">
+                Already have an account?{" "}
+                <Link
+                  href="/workspace/login"
+                  className="text-palette-primary font-semibold underline"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      sessionStorage.setItem("checkout_redirect", window.location.href);
+                    }
+                  }}
+                >
+                  Sign in
+                </Link>
+              </p>
+            </CardContent>
+          </Card>
+          ) : (
           <Card>
             <CardHeader>
               <CardTitle>Payment Method</CardTitle>
@@ -925,6 +1104,7 @@ function CheckoutContent() {
               </Tabs>
             </CardContent>
           </Card>
+          )}
         </div>
 
         {/* Security & Trust */}

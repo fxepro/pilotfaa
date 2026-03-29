@@ -17,7 +17,7 @@ export default function TestErrorsPage() {
     try {
       await executeWithErrorHandling(
         async () => {
-          const response = await fetch('/api/test-errors', {
+          const response = await fetch('/api/_deprecated-test-errors', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ errorType })

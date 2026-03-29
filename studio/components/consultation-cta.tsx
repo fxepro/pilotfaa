@@ -17,8 +17,8 @@ export function ConsultationCTA({
   description = "Our expert consultants can help you analyze your performance data, implement optimizations, and achieve better results.",
   primaryButtonText = "Get Expert Consultation",
   secondaryButtonText = "Learn More",
-  primaryButtonHref = "/consult",
-  secondaryButtonHref = "/consult"
+  primaryButtonHref = "/contact",
+  secondaryButtonHref = "/contact"
 }: ConsultationCTAProps) {
   return (
     <div className="mt-16">

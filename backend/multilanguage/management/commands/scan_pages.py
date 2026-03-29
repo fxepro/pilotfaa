@@ -143,7 +143,7 @@ def scan_pages_for_translation():
             # Check if it's a public page (like /performance, /typography, etc.)
             public_routes = ['/performance', '/typography', '/dns', '/ssl', '/sitemap', '/monitor', '/links', 
                            '/api-info', '/about', '/contact', '/blog', '/privacy', '/terms', '/cookies',
-                           '/deals', '/upgrade', '/consult', '/audit', '/results', '/feedback', '/ai-info',
+                           '/deals', '/courses', '/audit', '/results', '/feedback', '/ai-info',
                            '/ai-monitor', '/ai-health', '/monitor-info', '/performance-info', '/sitemap-info',
                            '/ssl-info', '/links-info']
             if route in public_routes or any(route.startswith(p) for p in public_routes):

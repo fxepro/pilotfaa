@@ -20,6 +20,7 @@ export function handleAuthError(errorMessage?: string): void {
   const currentPath = window.location.pathname;
   if (!currentPath.includes('/login') && 
       !currentPath.includes('/register') && 
+      !currentPath.includes('/checkout') &&
       !currentPath.includes('/verify-email')) {
     // Redirect to login with error message
     window.location.href = `/login?error=${encodeURIComponent(message)}`;

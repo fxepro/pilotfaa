@@ -476,7 +476,7 @@ To get started:
 2. Enter the demo credentials above
 3. Explore all {plan_display} features with sample data
 
-Ready to upgrade? Visit {settings.FRONTEND_URL or 'https://yourdomain.com'}/upgrade
+Ready to upgrade? Visit {settings.FRONTEND_URL or 'https://yourdomain.com'}/courses
 
 Need help? Contact us at support@adminrodeo.com
 

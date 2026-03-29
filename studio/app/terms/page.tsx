@@ -1,8 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PilotFAAMarketingShell } from "@/components/pilotfaa-marketing-shell"
 import { FileText, AlertTriangle, CheckCircle, XCircle, Shield, Users, Globe } from "lucide-react"
 
 export default function TermsOfServicePage() {
   return (
+    <PilotFAAMarketingShell>
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="text-center mb-12">
@@ -233,5 +235,6 @@ export default function TermsOfServicePage() {
         </Card>
       </div>
     </div>
+    </PilotFAAMarketingShell>
   )
 }

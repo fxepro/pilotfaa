@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { PostHogProviderWrapper } from "@/lib/posthog"
 import { LanguageProvider } from "@/components/language-provider"
 import { I18nProvider } from "@/components/i18n-provider"
+import { MarketingHashRedirect } from "@/components/marketing-hash-redirect"
 
 // Multi-language font support: Latin, Latin Extended, Cyrillic, Greek for European languages
 const inter = Inter({
@@ -78,6 +79,7 @@ export default function RootLayout({
         <I18nProvider>
         <PostHogProviderWrapper>
           <ThemeProvider>
+            <MarketingHashRedirect />
             <main className="min-h-screen bg-background">{children}</main>
             <ToasterProvider />
           </ThemeProvider>

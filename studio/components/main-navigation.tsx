@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Activity, BarChart3, Zap, Shield, Code, Link2, Gauge, Eye, Lock, FileText, Menu, X, Server, Type, CreditCard, Search, Database } from "lucide-react";
+import { Activity, BarChart3, Zap, Shield, Code, Link2, Gauge, Eye, Lock, FileText, Menu, X, Server, Type } from "lucide-react";
 import { useState } from "react";
 import { PilotFAABrandContent } from "@/components/pilotfaa-brand";
 import { useTranslation } from "react-i18next";
@@ -52,21 +52,6 @@ export function MainNavigation() {
                 Features
               </Link>
               <Link
-                href="/financials"
-                className={cn(
-                  "text-sm font-semibold transition-all duration-300 hover:text-palette-primary relative py-2 px-2 flex items-center whitespace-nowrap group",
-                  pathname === "/financials" || pathname.startsWith("/financials")
-                    ? "text-palette-primary font-bold after:absolute after:bottom-[-10px] after:left-0 after:right-0 after:h-1 after:bg-palette-primary after:rounded-full after:animate-pulse"
-                    : "text-slate-600 hover:text-palette-primary",
-                )}
-              >
-                <CreditCard className={cn(
-                  "h-4 w-4 mr-1.5 transition-transform duration-300",
-                  pathname === "/financials" || pathname.startsWith("/financials") ? "scale-110" : "group-hover:scale-110"
-                )} />
-                Financials
-              </Link>
-              <Link
                 href="/analytics"
                 className={cn(
                   "text-sm font-semibold transition-all duration-300 hover:text-palette-primary relative py-2 px-2 flex items-center whitespace-nowrap group",
@@ -80,36 +65,6 @@ export function MainNavigation() {
                   pathname === "/analytics" || pathname.startsWith("/analytics") ? "scale-110" : "group-hover:scale-110"
                 )} />
                 Analytics
-              </Link>
-              <Link
-                href="/databases"
-                className={cn(
-                  "text-sm font-semibold transition-all duration-300 hover:text-palette-primary relative py-2 px-2 flex items-center whitespace-nowrap group",
-                  pathname === "/databases" || pathname.startsWith("/databases")
-                    ? "text-palette-primary font-bold after:absolute after:bottom-[-10px] after:left-0 after:right-0 after:h-1 after:bg-palette-primary after:rounded-full after:animate-pulse"
-                    : "text-slate-600 hover:text-palette-primary",
-                )}
-              >
-                <Database className={cn(
-                  "h-4 w-4 mr-1.5 transition-transform duration-300",
-                  pathname === "/databases" || pathname.startsWith("/databases") ? "scale-110" : "group-hover:scale-110"
-                )} />
-                Databases
-              </Link>
-              <Link
-                href="/seo"
-                className={cn(
-                  "text-sm font-semibold transition-all duration-300 hover:text-palette-primary relative py-2 px-2 flex items-center whitespace-nowrap group",
-                  pathname === "/seo" || pathname.startsWith("/seo")
-                    ? "text-palette-primary font-bold after:absolute after:bottom-[-10px] after:left-0 after:right-0 after:h-1 after:bg-palette-primary after:rounded-full after:animate-pulse"
-                    : "text-slate-600 hover:text-palette-primary",
-                )}
-              >
-                <Search className={cn(
-                  "h-4 w-4 mr-1.5 transition-transform duration-300",
-                  pathname === "/seo" || pathname.startsWith("/seo") ? "scale-110" : "group-hover:scale-110"
-                )} />
-                SEO
               </Link>
               <Link
                 href="/api"
@@ -163,22 +118,6 @@ export function MainNavigation() {
                   <span>Features</span>
                 </Link>
                 <Link
-                  href="/financials"
-                  className={cn(
-                    "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300",
-                    pathname === "/financials" || pathname.startsWith("/financials")
-                      ? "bg-palette-accent-3 text-palette-primary font-semibold shadow-sm"
-                      : "text-slate-600 hover:bg-palette-accent-3 hover:text-palette-primary"
-                  )}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <CreditCard className={cn(
-                    "h-4 w-4 transition-transform duration-300",
-                    pathname === "/financials" || pathname.startsWith("/financials") ? "scale-110" : ""
-                  )} />
-                  <span>Financials</span>
-                </Link>
-                <Link
                   href="/analytics"
                   className={cn(
                     "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300",
@@ -193,38 +132,6 @@ export function MainNavigation() {
                     pathname === "/analytics" || pathname.startsWith("/analytics") ? "scale-110" : ""
                   )} />
                   <span>Analytics</span>
-                </Link>
-                <Link
-                  href="/databases"
-                  className={cn(
-                    "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300",
-                    pathname === "/databases" || pathname.startsWith("/databases")
-                      ? "bg-palette-accent-3 text-palette-primary font-semibold shadow-sm"
-                      : "text-slate-600 hover:bg-palette-accent-3 hover:text-palette-primary"
-                  )}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Database className={cn(
-                    "h-4 w-4 transition-transform duration-300",
-                    pathname === "/databases" || pathname.startsWith("/databases") ? "scale-110" : ""
-                  )} />
-                  <span>Databases</span>
-                </Link>
-                <Link
-                  href="/seo"
-                  className={cn(
-                    "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300",
-                    pathname === "/seo" || pathname.startsWith("/seo")
-                      ? "bg-palette-accent-3 text-palette-primary font-semibold shadow-sm"
-                      : "text-slate-600 hover:bg-palette-accent-3 hover:text-palette-primary"
-                  )}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Search className={cn(
-                    "h-4 w-4 transition-transform duration-300",
-                    pathname === "/seo" || pathname.startsWith("/seo") ? "scale-110" : ""
-                  )} />
-                  <span>SEO</span>
                 </Link>
                 <Link
                   href="/api"

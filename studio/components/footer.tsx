@@ -44,14 +44,11 @@ export function Footer() {
               <Link href="/features" className="text-white/80 hover:text-white transition-colors font-medium">
                 Features
               </Link>
-              <Link href="/databases" className="text-white/80 hover:text-white transition-colors font-medium">
-                Databases
+              <Link href="/courses" className="text-white/80 hover:text-white transition-colors font-medium">
+                Courses
               </Link>
               <Link href="/api" className="text-white/80 hover:text-white transition-colors font-medium">
                 API
-              </Link>
-              <Link href="/plans" className="text-white/80 hover:text-white transition-colors font-medium">
-                Plans
               </Link>
               <Link href="/about" className="text-white/80 hover:text-white transition-colors font-medium">
                 {t('footer.about')}

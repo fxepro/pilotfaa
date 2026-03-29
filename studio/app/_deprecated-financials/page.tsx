@@ -83,7 +83,7 @@ export default function FinancialsPage() {
         description="Complete financial management with subscription billing, payment processing, and multi-currency support"
         primaryAction={{
           text: "View Pricing",
-          href: "/plans",
+          href: "/courses",
           icon: CreditCard,
         }}
         secondaryAction={{
@@ -164,7 +164,7 @@ export default function FinancialsPage() {
                   Admin Rodeo offers flexible pricing plans to suit businesses of all sizes.
                 </p>
                 <Button size="lg" className="bg-palette-primary hover:bg-palette-primary-hover text-white" asChild>
-                  <Link href="/plans">
+                  <Link href="/courses">
                     <CreditCard className="mr-2 h-5 w-5" />
                     View All Plans
                   </Link>
@@ -239,7 +239,7 @@ export default function FinancialsPage() {
               className="bg-white text-palette-primary hover:bg-slate-100 shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-6 text-lg"
               asChild
             >
-              <Link href="/plans">
+              <Link href="/courses">
                 <CreditCard className="mr-2 h-5 w-5" />
                 View Plans
               </Link>

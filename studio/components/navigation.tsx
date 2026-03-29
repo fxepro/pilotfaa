@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Activity, BarChart3, Zap, Shield, Code, Brain, Link2, MessageCircle, Gauge, Eye, Lock, FileText, Menu, X, Server, Type, CreditCard, Search } from "lucide-react";
+import { Activity, BarChart3, Zap, Shield, Code, Brain, Link2, MessageCircle, Gauge, Eye, Lock, FileText, Menu, X, Type } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PilotFAABrandContent } from "@/components/pilotfaa-brand";
 
@@ -123,18 +123,6 @@ export function Navigation() {
                   Features
                 </Link>
                 <Link
-                  href="/financials"
-                  className={cn(
-                    "text-sm font-semibold transition-all duration-300 hover:text-palette-primary relative py-2 px-2 flex items-center whitespace-nowrap",
-                    pathname === "/financials"
-                      ? "text-palette-primary after:absolute after:bottom-[-10px] after:left-0 after:right-0 after:h-1 after:bg-palette-primary after:rounded-full"
-                      : "text-slate-600 hover:text-palette-primary",
-                  )}
-                >
-                  <CreditCard className="h-4 w-4 mr-1.5" />
-                  Financials
-                </Link>
-                <Link
                   href="/analytics"
                   className={cn(
                     "text-sm font-semibold transition-all duration-300 hover:text-palette-primary relative py-2 px-2 flex items-center whitespace-nowrap",
@@ -145,30 +133,6 @@ export function Navigation() {
                 >
                   <BarChart3 className="h-4 w-4 mr-1.5" />
                   Analytics
-                </Link>
-                <Link
-                  href="/databases"
-                  className={cn(
-                    "text-sm font-semibold transition-all duration-300 hover:text-palette-primary relative py-2 px-2 flex items-center whitespace-nowrap",
-                    pathname === "/databases"
-                      ? "text-palette-primary after:absolute after:bottom-[-10px] after:left-0 after:right-0 after:h-1 after:bg-palette-primary after:rounded-full"
-                      : "text-slate-600 hover:text-palette-primary",
-                  )}
-                >
-                  <Server className="h-4 w-4 mr-1.5" />
-                  Databases
-                </Link>
-                <Link
-                  href="/seo"
-                  className={cn(
-                    "text-sm font-semibold transition-all duration-300 hover:text-palette-primary relative py-2 px-2 flex items-center whitespace-nowrap",
-                    pathname === "/seo"
-                      ? "text-palette-primary after:absolute after:bottom-[-10px] after:left-0 after:right-0 after:h-1 after:bg-palette-primary after:rounded-full"
-                      : "text-slate-600 hover:text-palette-primary",
-                  )}
-                >
-                  <Search className="h-4 w-4 mr-1.5" />
-                  SEO
                 </Link>
                 <Link
                   href="/api"
@@ -197,25 +161,6 @@ export function Navigation() {
                 <Link href="/feedback">
                   <MessageCircle className="h-4 w-4 mr-2" />
                   Feedback
-                </Link>
-              </Button>
-              <Button 
-                variant="outline"
-                className="border-palette-accent-2 text-palette-primary hover:bg-palette-accent-3 transition-all duration-300 px-3 py-2 text-sm"
-                asChild
-              >
-                <Link href="/consult">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Consult
-                </Link>
-              </Button>
-              <Button 
-                className="bg-gradient-to-r from-palette-accent-1 to-palette-primary hover:from-palette-primary hover:to-palette-primary-hover text-white shadow-lg hover:shadow-purple-500/25 transition-all duration-300 px-3 py-2 text-sm" 
-                asChild
-              >
-                <Link href="/plans">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Plans
                 </Link>
               </Button>
               {loggedIn ? (
@@ -269,19 +214,6 @@ export function Navigation() {
                   <span>Features</span>
                 </Link>
                 <Link
-                  href="/financials"
-                  className={cn(
-                    "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    pathname === "/financials"
-                      ? "bg-palette-accent-3 text-palette-primary"
-                      : "text-slate-600 hover:bg-palette-accent-3 hover:text-palette-primary"
-                  )}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <CreditCard className="h-4 w-4" />
-                  <span>Financials</span>
-                </Link>
-                <Link
                   href="/analytics"
                   className={cn(
                     "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
@@ -293,45 +225,6 @@ export function Navigation() {
                 >
                   <BarChart3 className="h-4 w-4" />
                   <span>Analytics</span>
-                </Link>
-                <Link
-                  href="/databases"
-                  className={cn(
-                    "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    pathname === "/databases"
-                      ? "bg-palette-accent-3 text-palette-primary"
-                      : "text-slate-600 hover:bg-palette-accent-3 hover:text-palette-primary"
-                  )}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Server className="h-4 w-4" />
-                  <span>Databases</span>
-                </Link>
-                <Link
-                  href="/seo"
-                  className={cn(
-                    "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    pathname === "/seo"
-                      ? "bg-palette-accent-3 text-palette-primary"
-                      : "text-slate-600 hover:bg-palette-accent-3 hover:text-palette-primary"
-                  )}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Search className="h-4 w-4" />
-                  <span>SEO</span>
-                </Link>
-                <Link
-                  href="/api"
-                  className={cn(
-                    "flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                    pathname === "/api"
-                      ? "bg-palette-accent-3 text-palette-primary"
-                      : "text-slate-600 hover:bg-palette-accent-3 hover:text-palette-primary"
-                  )}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Code className="h-4 w-4" />
-                  <span>API</span>
                 </Link>
                 <Link
                   href="/api"
@@ -375,25 +268,6 @@ export function Navigation() {
 
               {/* Mobile Actions */}
               <div className="pt-4 border-t border-palette-accent-2/20 space-y-3">
-                <Button 
-                  variant="outline"
-                  className="w-full border-palette-accent-2 text-palette-primary hover:bg-palette-accent-3"
-                  asChild
-                >
-                  <Link href="/consult" onClick={() => setMobileMenuOpen(false)}>
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Consult
-                  </Link>
-                </Button>
-                <Button 
-                  className="w-full bg-gradient-to-r from-palette-accent-1 to-palette-primary hover:from-palette-primary hover:to-palette-primary-hover text-white" 
-                  asChild
-                >
-                  <Link href="/plans" onClick={() => setMobileMenuOpen(false)}>
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Plans
-                  </Link>
-                </Button>
                 {loggedIn ? (
                   <Button
                     className="w-full bg-white text-palette-primary border border-palette-accent-1 hover:bg-palette-accent-3"

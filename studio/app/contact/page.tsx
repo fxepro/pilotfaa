@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import { PilotFAAMarketingShell } from "@/components/pilotfaa-marketing-shell"
 import { ContactMain } from "@/components/contact-main"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -20,8 +21,10 @@ function ContactLoading() {
 
 export default function ContactPage() {
   return (
-    <Suspense fallback={<ContactLoading />}>
-      <ContactMain />
-    </Suspense>
+    <PilotFAAMarketingShell>
+      <Suspense fallback={<ContactLoading />}>
+        <ContactMain />
+      </Suspense>
+    </PilotFAAMarketingShell>
   )
 }

@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import { PilotFAAMarketingShell } from "@/components/pilotfaa-marketing-shell"
 import { PlansContent } from "@/components/plans-content"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -24,9 +25,11 @@ function PlansLoading() {
 
 export default function PlansPage() {
   return (
-    <Suspense fallback={<PlansLoading />}>
-      <PlansContent />
-    </Suspense>
+    <PilotFAAMarketingShell>
+      <Suspense fallback={<PlansLoading />}>
+        <PlansContent />
+      </Suspense>
+    </PilotFAAMarketingShell>
   )
 }
 

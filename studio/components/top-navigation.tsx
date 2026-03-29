@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, BarChart3, LogOut, User, FileText, Settings, Presentation } from "lucide-react";
+import { MessageCircle, LogOut, User, FileText, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { LanguageSelector } from "@/components/language-selector";
@@ -143,75 +143,6 @@ export function TopNavigation() {
                 )} />
                 {t('navigation.feedback')}
                 {(pathname === "/feedback" || pathname.startsWith("/feedback")) && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-palette-primary rounded-full animate-pulse"></span>
-                )}
-              </Link>
-            </Button>
-            
-            <Button 
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "relative transition-all duration-300 px-2 py-1 text-xs group",
-                pathname === "/consult" || pathname.startsWith("/consult")
-                  ? "text-palette-primary bg-palette-accent-3/50 font-semibold"
-                  : "text-slate-700 hover:text-palette-primary hover:bg-palette-accent-3/30"
-              )}
-              asChild
-            >
-              <Link href="/consult">
-                <User className={cn(
-                  "h-3.5 w-3.5 mr-1 transition-transform duration-300",
-                  pathname === "/consult" || pathname.startsWith("/consult") ? "scale-110" : "group-hover:scale-110"
-                )} />
-                {t('navigation.consult')}
-                {(pathname === "/consult" || pathname.startsWith("/consult")) && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-palette-primary rounded-full animate-pulse"></span>
-                )}
-              </Link>
-            </Button>
-            
-            <Button 
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "relative transition-all duration-300 px-2 py-1 text-xs group",
-                pathname === "/plans" || pathname.startsWith("/plans")
-                  ? "text-palette-primary bg-palette-accent-3/50 font-semibold"
-                  : "text-slate-700 hover:text-palette-primary hover:bg-palette-accent-3/30"
-              )}
-              asChild
-            >
-              <Link href="/plans">
-                <BarChart3 className={cn(
-                  "h-3.5 w-3.5 mr-1 transition-transform duration-300",
-                  pathname === "/plans" || pathname.startsWith("/plans") ? "scale-110" : "group-hover:scale-110"
-                )} />
-                Plans
-                {(pathname === "/plans" || pathname.startsWith("/plans")) && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-palette-primary rounded-full animate-pulse"></span>
-                )}
-              </Link>
-            </Button>
-            
-            <Button 
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "relative transition-all duration-300 px-2 py-1 text-xs group",
-                pathname === "/request-demo" || pathname.startsWith("/request-demo")
-                  ? "text-palette-primary bg-palette-accent-3/50 font-semibold"
-                  : "text-slate-700 hover:text-palette-primary hover:bg-palette-accent-3/30"
-              )}
-              asChild
-            >
-              <Link href="/request-demo">
-                <Presentation className={cn(
-                  "h-3.5 w-3.5 mr-1 transition-transform duration-300",
-                  pathname === "/request-demo" || pathname.startsWith("/request-demo") ? "scale-110" : "group-hover:scale-110"
-                )} />
-                Request Demo
-                {(pathname === "/request-demo" || pathname.startsWith("/request-demo")) && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-palette-primary rounded-full animate-pulse"></span>
                 )}
               </Link>

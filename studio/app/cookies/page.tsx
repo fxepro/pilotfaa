@@ -1,8 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PilotFAAMarketingShell } from "@/components/pilotfaa-marketing-shell"
 import { Cookie, Settings, Shield, Eye, Database, AlertTriangle } from "lucide-react"
 
 export default function CookiePolicyPage() {
   return (
+    <PilotFAAMarketingShell>
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="text-center mb-12">
@@ -283,5 +285,6 @@ export default function CookiePolicyPage() {
         </Card>
       </div>
     </div>
+    </PilotFAAMarketingShell>
   )
 }

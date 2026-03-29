@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -257,7 +256,8 @@ export default function BlogPostPage() {
                       <p className="text-sm text-slate-600 mb-2">{post.author.email}</p>
                     )}
                     <p className="text-slate-600">
-                      Author of this blog post. Follow for more insights and updates.
+                      PilotFAA contributor. Articles are for education and do not replace your CFI,
+                      POH, or current FAA publications.
                     </p>
                   </div>
                 </div>

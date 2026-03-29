@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Tag, Percent, Calendar, CheckCircle, Loader2 } from "lucide-react";
 import axios from "axios";
 import { getDjangoApiUrl } from "@/lib/api-config";
+import { PilotFAAMarketingShell } from "@/components/pilotfaa-marketing-shell";
 
 interface Deal {
   id: number;
@@ -62,16 +63,19 @@ export default function DealsPage() {
 
   if (loading) {
     return (
+      <PilotFAAMarketingShell>
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-palette-primary mx-auto mb-4" />
           <p className="text-slate-600">Loading deals...</p>
         </div>
       </div>
+      </PilotFAAMarketingShell>
     );
   }
 
   return (
+    <PilotFAAMarketingShell>
     <div className="min-h-screen bg-gradient-to-br from-palette-accent-3 via-white to-palette-accent-3">
       <div className="container mx-auto px-4 py-12 max-w-7xl">
         {/* Header */}
@@ -95,7 +99,7 @@ export default function DealsPage() {
             <h2 className="text-2xl font-semibold text-slate-800 mb-2">No Active Deals</h2>
             <p className="text-slate-600 mb-6">Check back soon for new promotional offers!</p>
             <Button asChild>
-              <Link href="/upgrade">View All Plans</Link>
+              <Link href="/courses">View courses</Link>
             </Button>
           </div>
         ) : (
@@ -194,8 +198,8 @@ export default function DealsPage() {
                 Check out our regular pricing plans. All plans include a 10% discount when billed annually.
               </p>
               <Button asChild size="lg">
-                <Link href="/upgrade">
-                  View All Plans
+                <Link href="/courses">
+                  View courses
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -204,6 +208,7 @@ export default function DealsPage() {
         </div>
       </div>
     </div>
+    </PilotFAAMarketingShell>
   );
 }
 

@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
+import { PilotFAAMarketingShell } from "@/components/pilotfaa-marketing-shell";
 
 export const metadata: Metadata = {
-  title: "Admin Rodeo Blog",
-  description: "Expert insights on platform development, best practices, and implementation strategies.",
-  keywords: "admin platform, development, best practices, implementation",
-  authors: [{ name: "Admin Rodeo Team" }],
+  title: "PilotFAA Blog",
+  description: "FAA ground school tips, study strategies, and aviation knowledge test prep.",
+  keywords: "FAA, ground school, pilot training, knowledge test, PHAK, ACS",
+  authors: [{ name: "PilotFAA" }],
   openGraph: {
-    title: "Admin Rodeo Blog",
-    description: "Expert insights on platform development, best practices, and implementation strategies.",
+    title: "PilotFAA Blog",
+    description: "FAA ground school tips, study strategies, and aviation knowledge test prep.",
     type: "website",
-    url: "https://adminrodeo.com/blog",
-    siteName: "Admin Rodeo",
+    siteName: "PilotFAA",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Admin Rodeo Blog",
-    description: "Expert insights on platform development, best practices, and implementation strategies.",
+    title: "PilotFAA Blog",
+    description: "FAA ground school tips, study strategies, and aviation knowledge test prep.",
   },
   robots: {
     index: true,
@@ -35,5 +35,5 @@ export default function BlogLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <PilotFAAMarketingShell>{children}</PilotFAAMarketingShell>;
 }

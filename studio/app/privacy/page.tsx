@@ -1,8 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PilotFAAMarketingShell } from "@/components/pilotfaa-marketing-shell"
 import { Shield, Eye, Lock, Database, Users, Globe } from "lucide-react"
 
 export default function PrivacyPolicyPage() {
   return (
+    <PilotFAAMarketingShell>
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="text-center mb-12">
@@ -171,5 +173,6 @@ export default function PrivacyPolicyPage() {
         </Card>
       </div>
     </div>
+    </PilotFAAMarketingShell>
   )
 }

@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import { PilotFAAMarketingShell } from "@/components/pilotfaa-marketing-shell"
 import { AboutMain } from "@/components/about-main"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -20,8 +21,10 @@ function AboutLoading() {
 
 export default function AboutPage() {
   return (
-    <Suspense fallback={<AboutLoading />}>
-      <AboutMain />
-    </Suspense>
+    <PilotFAAMarketingShell>
+      <Suspense fallback={<AboutLoading />}>
+        <AboutMain />
+      </Suspense>
+    </PilotFAAMarketingShell>
   )
 }

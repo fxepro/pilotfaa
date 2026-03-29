@@ -44,6 +44,7 @@ axiosInstance.interceptors.response.use(
         const currentPath = window.location.pathname;
         if (!currentPath.includes('/login') && 
             !currentPath.includes('/register') && 
+            !currentPath.includes('/checkout') &&
             !currentPath.includes('/verify-email')) {
           // Redirect to login with error message
           const errorMessage = encodeURIComponent('Your session has expired or you have been logged out. Please log in again.');

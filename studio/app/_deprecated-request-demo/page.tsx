@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { User, Mail, Building, MessageSquare, CheckCircle, AlertCircle, LogIn, Rocket } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SimpleHeroSection } from "@/components/simple-hero-section";
+import { PilotFAAMarketingShell } from "@/components/pilotfaa-marketing-shell";
 
 // Use relative URL in production (browser), localhost in dev (SSR)
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? (typeof window !== 'undefined' ? '' : 'http://localhost:8000');
@@ -101,6 +102,7 @@ export default function RequestDemoPage() {
 
   if (submitted) {
     return (
+      <PilotFAAMarketingShell>
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-palette-accent-3 via-white to-palette-accent-3 p-4">
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="text-center">
@@ -145,10 +147,12 @@ export default function RequestDemoPage() {
           </CardContent>
         </Card>
       </div>
+      </PilotFAAMarketingShell>
     );
   }
 
   return (
+    <PilotFAAMarketingShell>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Hero Section */}
       <SimpleHeroSection
@@ -347,6 +351,7 @@ export default function RequestDemoPage() {
         </Card>
       </div>
     </div>
+    </PilotFAAMarketingShell>
   );
 }
 
