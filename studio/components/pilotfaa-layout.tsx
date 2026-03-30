@@ -2,6 +2,9 @@
 import Link from "next/link";
 import { PILOTFAA_NAV } from "@/lib/pilotfaa-marketing";
 
+/** Re-export so `import { PilotFAANav, PilotFAAFooter } from "@/components/pilotfaa-layout"` works. */
+export { PilotFAANav } from "./pilotfaa-nav";
+
 /** Legacy compact header; prefer `PilotFAANav` from `@/components/pilotfaa-nav` for the main site shell. */
 export function PilotFAALayoutNav() {
   return (
