@@ -20,6 +20,11 @@ const nextConfig = {
         destination: 'http://localhost:8000/api/sitemap/',
       },
       {
+        // PDF endpoint — explicit rule to preserve trailing slash
+        source: '/api/pilotfaa/faa/pdf/:code',
+        destination: 'http://localhost:8000/api/pilotfaa/faa/pdf/:code/',
+      },
+      {
         source: '/api/:path*',
         destination: 'http://localhost:8000/api/:path*',
       },
