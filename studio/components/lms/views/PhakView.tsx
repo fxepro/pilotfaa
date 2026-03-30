@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { usePilotFAA } from '@/contexts/PilotFAAContext'
 
 // Always use relative URLs for PDF — goes through Next.js proxy to avoid cross-origin iframe blocking
@@ -34,19 +34,18 @@ export default function PhakView() {
   const [pdfError,      setPdfError]      = useState(false)
   const [token,         setToken]         = useState('')
 
-  // Get auth token from localStorage (client-side only)
+  const checkedRef = useRef(false)
+
+  // Get auth token and check PDF availability — runs once only
   useEffect(() => {
+    if (checkedRef.current) return
+    checkedRef.current = true
     const t = localStorage.getItem('access_token') ?? ''
     setToken(t)
-    // Check if PDF exists
-    if (t) {
-      fetch(`/api/pilotfaa/faa/pdf/PHAK/`, {
-        method: 'HEAD',
-        headers: { Authorization: `Bearer ${t}` },
-      })
-        .then(r => { setPdfReady(r.ok); if (!r.ok) setPdfError(true) })
-        .catch(() => setPdfError(true))
-    }
+    if (!t) { setPdfError(true); return }
+    fetch(`/api/pilotfaa/faa/pdf/PHAK/?token=${t}`, { method: 'HEAD' })
+      .then(r => { if (r.ok) setPdfReady(true); else setPdfError(true) })
+      .catch(() => setPdfError(true))
   }, [])
 
   const filtered = CHAPTERS.filter(ch =>
