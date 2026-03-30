@@ -1,20 +1,12 @@
 'use client'
 
-/**
- * contexts/PilotFAAContext.tsx
- *
- * Replaces the mock AppContext from the standalone PilotFAA prototype.
- * All data now comes from Django via the typed pilotfaa.ts API client.
- * Auth is inherited from the existing admin studio JWT — no separate login.
- */
-
 import React, {
   createContext, useContext, useState, useCallback,
   useEffect, useRef, type ReactNode,
 } from 'react'
 import {
   contentApi, progressApi, quizApi, tutorApi,
-  type Course, type CourseDetail, type LessonDetail,
+  type Course, type CourseDetail, type Chapter, type LessonDetail,
   type Enrollment, type DashboardStats, type Bookmark,
   type Note, type TutorSession, type TutorMessage,
   type QuizAttempt, type TopicMastery, type QuestionBank,
@@ -23,9 +15,10 @@ import {
 // ─── View IDs ─────────────────────────────────────────────────────────────────
 
 export type ViewId =
-  | 'dashboard' | 'courses'   | 'lesson'    | 'tutor'
-  | 'quiz'      | 'bookmarks' | 'notes'     | 'phak'
-  | 'faraim'    | 'acs'       | 'progress'
+  | 'dashboard' | 'courses'     | 'courseDetail' | 'chapter'
+  | 'lesson'    | 'tutor'       | 'quiz'
+  | 'bookmarks' | 'notes'       | 'phak'
+  | 'faraim'    | 'acs'         | 'progress'
 
 // ─── Context shape ────────────────────────────────────────────────────────────
 
@@ -35,6 +28,11 @@ interface PilotFAAContextValue {
   setActiveView: (v: ViewId) => void
   activeLessonId: number | null
   openLesson: (lessonId: number) => void
+
+  // Chapter drill-down
+  activeChapterId: number | null
+  openChapter: (chapterId: number) => void
+  activeChapterData: Chapter | null
 
   // Courses
   courses: Course[]
@@ -92,8 +90,6 @@ interface PilotFAAContextValue {
   weakTopics: TopicMastery[]
 }
 
-// ─── Context ──────────────────────────────────────────────────────────────────
-
 const PilotFAAContext = createContext<PilotFAAContextValue | null>(null)
 
 export function PilotFAAProvider({ children }: { children: ReactNode }) {
@@ -101,11 +97,15 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
   const [activeView,     setActiveView]     = useState<ViewId>('dashboard')
   const [activeLessonId, setActiveLessonId] = useState<number | null>(null)
 
+  // Chapter drill-down
+  const [activeChapterId,   setActiveChapterId]   = useState<number | null>(null)
+  const [activeChapterData, setActiveChapterData] = useState<Chapter | null>(null)
+
   // Courses
-  const [courses,           setCourses]           = useState<Course[]>([])
-  const [activeCourse,      setActiveCourse]       = useState<CourseDetail | null>(null)
-  const [activeCourseSlug,  setActiveCourseSlug_]  = useState<string>('private-pilot')
-  const [loadingCourses,    setLoadingCourses]     = useState(false)
+  const [courses,          setCourses]          = useState<Course[]>([])
+  const [activeCourse,     setActiveCourse]     = useState<CourseDetail | null>(null)
+  const [activeCourseSlug, setActiveCourseSlug_] = useState<string>('private-pilot')
+  const [loadingCourses,   setLoadingCourses]   = useState(false)
 
   // Enrollment
   const [enrollments,      setEnrollments]      = useState<Enrollment[]>([])
@@ -126,8 +126,8 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
 
   // Notes
-  const [notes,         setNotes]         = useState<Note[]>([])
-  const [activeNoteId,  setActiveNoteId]  = useState<number | null>(null)
+  const [notes,        setNotes]        = useState<Note[]>([])
+  const [activeNoteId, setActiveNoteId] = useState<number | null>(null)
 
   // Tutor
   const [tutorSession,  setTutorSession]  = useState<TutorSession | null>(null)
@@ -141,11 +141,9 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
   // Mastery
   const [topicMastery, setTopicMastery] = useState<TopicMastery[]>([])
 
-  // ── Initial load ────────────────────────────────────────────────────────────
+  // ── Initial load ─────────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    loadInitialData()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadInitialData() }, []) // eslint-disable-line
 
   async function loadInitialData() {
     try {
@@ -158,46 +156,51 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
           progressApi.getStats(),
           quizApi.getMastery(),
         ])
-
-      if (coursesData.status === 'fulfilled')    setCourses(coursesData.value)
+      if (coursesData.status     === 'fulfilled') setCourses(coursesData.value)
       if (enrollmentsData.status === 'fulfilled') setEnrollments(enrollmentsData.value)
-      if (bookmarksData.status === 'fulfilled')   setBookmarks(bookmarksData.value)
-      if (notesData.status === 'fulfilled')       setNotes(notesData.value)
-      if (statsData.status === 'fulfilled')       setStats(statsData.value)
-      if (masteryData.status === 'fulfilled')     setTopicMastery(masteryData.value)
-    } catch {
-      // Non-fatal — dashboard renders with empty state
-    }
+      if (bookmarksData.status   === 'fulfilled') setBookmarks(bookmarksData.value)
+      if (notesData.status       === 'fulfilled') setNotes(notesData.value)
+      if (statsData.status       === 'fulfilled') setStats(statsData.value)
+      if (masteryData.status     === 'fulfilled') setTopicMastery(masteryData.value)
+    } catch { /* non-fatal */ }
   }
 
-  // ── Active course ───────────────────────────────────────────────────────────
+  // ── Active course ─────────────────────────────────────────────────────────────
 
   const setActiveCourseSlug = useCallback(async (slug: string) => {
     setActiveCourseSlug_(slug)
     setLoadingCourses(true)
     try {
-      const [detail, banksData] = await Promise.allSettled([
-        contentApi.getCourse(slug),
-        // banks need course id — load after detail
-        Promise.resolve(null),
-      ])
-      if (detail.status === 'fulfilled') {
-        setActiveCourse(detail.value)
-        // Load quiz banks for this course
-        const banks = await quizApi.getBanks(detail.value.id)
-        setQuizBanks(banks)
-      }
-      // Find matching enrollment
+      const detail = await contentApi.getCourse(slug)
+      setActiveCourse(detail)
+      const banks = await quizApi.getBanks(detail.id)
+      setQuizBanks(banks)
       const enr = enrollments.find(e => e.course_slug === slug) ?? null
       setActiveEnrollment(enr)
-    } catch {
-      // keep previous state
-    } finally {
-      setLoadingCourses(false)
-    }
+    } catch { /* keep previous state */ }
+    finally { setLoadingCourses(false) }
   }, [enrollments])
 
-  // ── Open lesson ─────────────────────────────────────────────────────────────
+  // ── Open chapter ──────────────────────────────────────────────────────────────
+
+  const openChapter = useCallback(async (chapterId: number) => {
+    setActiveChapterId(chapterId)
+    setActiveView('chapter')
+    // Find chapter data from the already-loaded activeCourse
+    if (activeCourse) {
+      for (const mod of activeCourse.modules) {
+        const ch = mod.chapters.find(c => c.id === chapterId)
+        if (ch) { setActiveChapterData(ch); return }
+      }
+    }
+    // Fallback: fetch from API
+    try {
+      const ch = await contentApi.getChapter(chapterId)
+      setActiveChapterData(ch)
+    } catch { /* stay on current chapter */ }
+  }, [activeCourse])
+
+  // ── Open lesson ───────────────────────────────────────────────────────────────
 
   const openLesson = useCallback(async (lessonId: number) => {
     setActiveLessonId(lessonId)
@@ -206,12 +209,10 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
     try {
       const lesson = await contentApi.getLesson(lessonId)
       setActiveLesson(lesson)
-    } finally {
-      setLoadingLesson(false)
-    }
+    } finally { setLoadingLesson(false) }
   }, [])
 
-  // ── Enroll ──────────────────────────────────────────────────────────────────
+  // ── Enroll ────────────────────────────────────────────────────────────────────
 
   const enroll = useCallback(async (courseId: number) => {
     const enrollment = await progressApi.enroll(courseId)
@@ -222,7 +223,7 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
     setActiveEnrollment(enrollment)
   }, [])
 
-  // ── Study sessions ──────────────────────────────────────────────────────────
+  // ── Study sessions ────────────────────────────────────────────────────────────
 
   const startStudySession = useCallback(async (lessonId: number) => {
     if (!activeEnrollment) return
@@ -239,19 +240,17 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
     if (!studySessionId) return
     await progressApi.endSession(studySessionId)
     setStudySessionId(null)
-    // Refresh stats
     const updated = await progressApi.getStats()
     setStats(updated)
   }, [studySessionId])
 
-  // Close session on page unload
   useEffect(() => {
     const handler = () => { if (studySessionId) progressApi.endSession(studySessionId) }
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
   }, [studySessionId])
 
-  // ── Bookmarks ───────────────────────────────────────────────────────────────
+  // ── Bookmarks ─────────────────────────────────────────────────────────────────
 
   const addBookmark = useCallback(async (data: Omit<Bookmark, 'id' | 'created_at'>) => {
     const bm = await progressApi.addBookmark(data)
@@ -263,12 +262,10 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
     setBookmarks(prev => prev.filter(b => b.id !== id))
   }, [])
 
-  // ── Notes ───────────────────────────────────────────────────────────────────
+  // ── Notes ─────────────────────────────────────────────────────────────────────
 
   const createNote = useCallback(async (data?: Partial<Note>) => {
-    const note = await progressApi.createNote({
-      title: 'New Note', source_ref: '', body: '', ...data
-    })
+    const note = await progressApi.createNote({ title: 'New Note', source_ref: '', body: '', ...data })
     setNotes(prev => [note, ...prev])
     setActiveNoteId(note.id)
   }, [])
@@ -284,7 +281,7 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
     if (activeNoteId === id) setActiveNoteId(notes.find(n => n.id !== id)?.id ?? null)
   }, [activeNoteId, notes])
 
-  // ── AI Tutor ────────────────────────────────────────────────────────────────
+  // ── AI Tutor ──────────────────────────────────────────────────────────────────
 
   const startTutorSession = useCallback(async () => {
     if (!activeCourse || !activeEnrollment) return
@@ -295,7 +292,6 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
       study_mode:    'learn',
     })
     setTutorSession(session)
-    // Load existing message history
     const msgs = await tutorApi.getMessages(session.id)
     setTutorMessages(msgs)
   }, [activeCourse, activeEnrollment, activeLessonId])
@@ -306,28 +302,24 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
     try {
       const { user_message, ai_message } = await tutorApi.ask(tutorSession.id, message)
       setTutorMessages(prev => [...prev, user_message, ai_message])
-    } finally {
-      setTutorLoading(false)
-    }
+    } finally { setTutorLoading(false) }
   }, [tutorSession])
 
-  // ── Derived ─────────────────────────────────────────────────────────────────
+  // ── Derived ───────────────────────────────────────────────────────────────────
 
   const weakTopics = topicMastery.filter(t => t.is_weak)
-
-  // ── Context value ────────────────────────────────────────────────────────────
 
   const value: PilotFAAContextValue = {
     activeView, setActiveView,
     activeLessonId, openLesson,
+    activeChapterId, openChapter, activeChapterData,
     courses, activeCourse, activeCourseSlug, setActiveCourseSlug, loadingCourses,
     enrollments, activeEnrollment, enroll,
     activeLesson, loadingLesson,
     stats,
     studySessionId, startStudySession, endStudySession,
     bookmarks, addBookmark, removeBookmark, bookmarkCount: bookmarks.length,
-    notes, activeNoteId, setActiveNoteId, createNote, updateNote, deleteNote,
-    noteCount: notes.length,
+    notes, activeNoteId, setActiveNoteId, createNote, updateNote, deleteNote, noteCount: notes.length,
     tutorSession, tutorMessages, tutorLoading, startTutorSession, askTutor,
     quizBanks, activeAttempt, setActiveAttempt,
     topicMastery, weakTopics,

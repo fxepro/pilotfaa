@@ -3,9 +3,9 @@
 import { usePilotFAA } from '@/contexts/PilotFAAContext'
 import { lazy, Suspense } from 'react'
 
-// Lazy-load each view so the initial bundle stays small
 const DashboardView  = lazy(() => import('./views/DashboardView'))
 const CoursesView    = lazy(() => import('./views/CoursesView'))
+const ChapterView    = lazy(() => import('./views/ChapterView'))
 const LessonView     = lazy(() => import('./views/LessonView'))
 const TutorView      = lazy(() => import('./views/TutorView'))
 const QuizView       = lazy(() => import('./views/QuizView'))
@@ -29,17 +29,19 @@ export default function LMSRouter() {
 
   return (
     <Suspense fallback={<ViewLoader />}>
-      {activeView === 'dashboard'  && <DashboardView />}
-      {activeView === 'courses'    && <CoursesView />}
-      {activeView === 'lesson'     && <LessonView />}
-      {activeView === 'tutor'      && <TutorView />}
-      {activeView === 'quiz'       && <QuizView />}
-      {activeView === 'bookmarks'  && <BookmarksView />}
-      {activeView === 'notes'      && <NotesView />}
-      {activeView === 'phak'       && <PhakView />}
-      {activeView === 'faraim'     && <FarAimView />}
-      {activeView === 'acs'        && <AcsView />}
-      {activeView === 'progress'   && <ProgressView />}
+      {activeView === 'dashboard'    && <DashboardView />}
+      {activeView === 'courses'      && <CoursesView />}
+      {activeView === 'courseDetail' && <CoursesView />}
+      {activeView === 'chapter'      && <ChapterView />}
+      {activeView === 'lesson'       && <LessonView />}
+      {activeView === 'tutor'        && <TutorView />}
+      {activeView === 'quiz'         && <QuizView />}
+      {activeView === 'bookmarks'    && <BookmarksView />}
+      {activeView === 'notes'        && <NotesView />}
+      {activeView === 'phak'         && <PhakView />}
+      {activeView === 'faraim'       && <FarAimView />}
+      {activeView === 'acs'          && <AcsView />}
+      {activeView === 'progress'     && <ProgressView />}
     </Suspense>
   )
 }

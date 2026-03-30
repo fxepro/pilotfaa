@@ -4,7 +4,7 @@ import { usePilotFAA } from '@/contexts/PilotFAAContext'
 
 export default function DashboardView() {
   const {
-    setActiveView, openLesson,
+    setActiveView, openLesson, openChapter,
     activeCourse, activeEnrollment, stats,
     weakTopics,
   } = usePilotFAA()
@@ -63,7 +63,10 @@ export default function DashboardView() {
           </div>
           <div className="pf-card">
             {activeCourse.modules.flatMap(m => m.chapters).map(ch => (
-              <div className="pf-chap-row" key={ch.id}>
+              <div className="pf-chap-row" key={ch.id}
+                onClick={() => openChapter(ch.id)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="pf-chap-num">{ch.chapter_number}</div>
                 <div className="pf-chap-info">
                   <div className="pf-chap-title">Ch.{ch.chapter_number} — {ch.title}</div>
@@ -76,6 +79,7 @@ export default function DashboardView() {
                     <div className="pf-cmb-fill" style={{ width: '0%', background: 'var(--pf-ink-dim)' }} />
                   </div>
                 </div>
+                <div style={{ color: 'var(--pf-ink-dim)', fontSize: 16, marginLeft: 8 }}>›</div>
               </div>
             ))}
           </div>
