@@ -20,6 +20,9 @@ class FAASourceDocument(models.Model):
     effective_date   = models.DateField()
     source_url       = models.URLField(blank=True, help_text="Canonical FAA.gov or eCFR.gov URL")
     pdf_s3_key       = models.TextField(blank=True, help_text="S3 key for cached PDF copy")
+    pdf_file         = models.BinaryField(
+                           blank=True, null=True,
+                           help_text="PDF binary stored in database — upload via upload_pdf.py")
     chapter_count    = models.PositiveIntegerField(null=True, blank=True)
     is_current       = models.BooleanField(default=True, db_index=True,
                            help_text="False once superseded by a newer version")

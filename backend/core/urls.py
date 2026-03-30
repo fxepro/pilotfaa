@@ -95,6 +95,7 @@ urlpatterns += [
     # path('', include('monitor_analysis.urls')),
     # path('', include('monitoring.urls')),  # Public-facing monitoring (deprecated)
     # ── PilotFAA LMS APIs ──
+    path('api/pilotfaa/faa/',     include('pilotfaa_faa.urls')),
     path('api/pilotfaa/content/',  include('pilotfaa_content.urls')),
     path('api/pilotfaa/progress/', include('pilotfaa_progress.urls')),
     path('api/pilotfaa/quiz/',     include('pilotfaa_assessments.urls')),
