@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { usePilotFAA } from '@/contexts/PilotFAAContext'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? ''
+// Always use relative URLs for PDF — goes through Next.js proxy to avoid cross-origin iframe blocking
 
 const CHAPTERS = [
   { num: 1,  title: 'Introduction to Flying',           pages: '1-1 to 1-18',   pdfPage: 13  },
@@ -40,7 +40,7 @@ export default function PhakView() {
     setToken(t)
     // Check if PDF exists
     if (t) {
-      fetch(`${API_BASE}/api/pilotfaa/faa/pdf/PHAK/`, {
+      fetch(`/api/pilotfaa/faa/pdf/PHAK/`, {
         method: 'HEAD',
         headers: { Authorization: `Bearer ${t}` },
       })
@@ -60,7 +60,7 @@ export default function PhakView() {
   // Build authenticated PDF URL — we pass the token as a query param
   // because iframes can't send custom headers
   const pdfSrc = pdfReady
-    ? `${API_BASE}/api/pilotfaa/faa/pdf/PHAK/?token=${token}#page=${chapter.pdfPage}`
+    ? `/api/pilotfaa/faa/pdf/PHAK/?token=${token}#page=${chapter.pdfPage}`
     : null
 
   return (
