@@ -259,3 +259,113 @@ for lesson_num, data in LESSONS.items():
 
 print(f"\n=== Done — Chapter 1 ready in the LMS ===")
 print("Visit http://localhost:3000/lms → Module 1 → Ch.1 → any lesson")
+
+
+# ── Chapter 1 Quiz — 5 questions ─────────────────────────────────────────────
+from pilotfaa_content.models import Chapter
+from pilotfaa_assessments.models import QuestionBank, Question
+from pilotfaa_content.models import Course
+
+print("\n=== Seeding Chapter 1 Quiz Questions ===\n")
+
+course  = Course.objects.get(slug='private-pilot')
+chapter = Chapter.objects.get(chapter_number=1, module__course=course)
+bank, _ = QuestionBank.objects.get_or_create(
+    course=course, chapter=chapter,
+    defaults={
+        'name': 'Q1 — Introduction to Flying',
+        'bank_type': 'chapter',
+        'pass_threshold_pct': 70,
+        'is_active': True,
+    }
+)
+
+QUESTIONS = [
+    {
+        'question_text': 'Who has final authority and responsibility for the operation and safety of a flight?',
+        'options': [
+            {'letter': 'A', 'text': 'The aircraft owner',                          'is_correct': False},
+            {'letter': 'B', 'text': 'The Pilot in Command (PIC)',                  'is_correct': True},
+            {'letter': 'C', 'text': 'The FAA Flight Standards District Office',    'is_correct': False},
+            {'letter': 'D', 'text': 'The highest-rated pilot aboard',              'is_correct': False},
+        ],
+        'correct_letter': 'B',
+        'rationale': 'Under 14 CFR §91.3, the Pilot in Command is directly responsible for, and the final authority as to, the operation of the aircraft. This authority cannot be delegated.',
+        'rationale_source_ref': 'PHAK FAA-H-8083-25C · Ch.1 p.1-2 · 14 CFR §91.3',
+    },
+    {
+        'question_text': 'What is the minimum age to apply for a student pilot certificate to fly powered aircraft?',
+        'options': [
+            {'letter': 'A', 'text': '14 years old', 'is_correct': False},
+            {'letter': 'B', 'text': '15 years old', 'is_correct': False},
+            {'letter': 'C', 'text': '16 years old', 'is_correct': True},
+            {'letter': 'D', 'text': '17 years old', 'is_correct': False},
+        ],
+        'correct_letter': 'C',
+        'rationale': 'Per 14 CFR §61.83, an applicant for a student pilot certificate must be at least 16 years of age for powered aircraft. The minimum age is 14 for gliders and balloons.',
+        'rationale_source_ref': 'PHAK FAA-H-8083-25C · Ch.1 p.1-6 · 14 CFR §61.83',
+    },
+    {
+        'question_text': 'Which class of medical certificate is required for a student pilot exercising solo flight privileges?',
+        'options': [
+            {'letter': 'A', 'text': 'First class',  'is_correct': False},
+            {'letter': 'B', 'text': 'Second class', 'is_correct': False},
+            {'letter': 'C', 'text': 'Third class',  'is_correct': True},
+            {'letter': 'D', 'text': 'No medical certificate is required', 'is_correct': False},
+        ],
+        'correct_letter': 'C',
+        'rationale': 'A third-class medical certificate is the minimum required for student pilots and private pilot privileges. It is valid for 60 months for applicants under age 40, and 24 months for those 40 and older.',
+        'rationale_source_ref': 'PHAK FAA-H-8083-25C · Ch.1 p.1-7 · 14 CFR §61.23',
+    },
+    {
+        'question_text': 'Which of the following is a hazardous attitude identified by the FAA that can lead to accidents?',
+        'options': [
+            {'letter': 'A', 'text': 'Caution',        'is_correct': False},
+            {'letter': 'B', 'text': 'Invulnerability', 'is_correct': True},
+            {'letter': 'C', 'text': 'Conservatism',   'is_correct': False},
+            {'letter': 'D', 'text': 'Patience',        'is_correct': False},
+        ],
+        'correct_letter': 'B',
+        'rationale': 'The FAA identifies five hazardous attitudes: Anti-authority, Impulsivity, Invulnerability, Macho, and Resignation. Invulnerability ("It won\'t happen to me") causes pilots to dismiss risk and take unnecessary chances.',
+        'rationale_source_ref': 'PHAK FAA-H-8083-25C · Ch.1 p.1-4 · Ch.2 ADM',
+    },
+    {
+        'question_text': 'How long is a flight instructor solo endorsement valid for a student pilot?',
+        'options': [
+            {'letter': 'A', 'text': '30 days',  'is_correct': False},
+            {'letter': 'B', 'text': '60 days',  'is_correct': False},
+            {'letter': 'C', 'text': '90 days',  'is_correct': True},
+            {'letter': 'D', 'text': '180 days', 'is_correct': False},
+        ],
+        'correct_letter': 'C',
+        'rationale': 'Per 14 CFR §61.87(n), a solo flight endorsement for a student pilot is valid for 90 days. After 90 days, the student must receive additional training and a new endorsement from a flight instructor.',
+        'rationale_source_ref': 'PHAK FAA-H-8083-25C · Ch.1 p.1-9 · 14 CFR §61.87(n)',
+    },
+]
+
+added = 0
+for q in QUESTIONS:
+    if not Question.objects.filter(bank=bank, question_text=q['question_text']).exists():
+        Question.objects.create(
+            bank=bank,
+            chapter=chapter,
+            question_text=q['question_text'],
+            question_type='single_choice',
+            options=q['options'],
+            correct_letter=q['correct_letter'],
+            rationale=q['rationale'],
+            rationale_source_ref=q['rationale_source_ref'],
+            difficulty='medium',
+            exam_relevant=True,
+            status='active',
+        )
+        added += 1
+        print(f"  ✓ Added: {q['question_text'][:60]}...")
+
+# Update question count on bank
+from django.db.models import Count
+count = Question.objects.filter(bank=bank, status='active').count()
+QuestionBank.objects.filter(id=bank.id).update(question_count=count)
+
+print(f"\n  Q1 bank now has {count} questions ({added} new)")
+print(f"\n=== Done — Ch.1 quiz ready ===")
