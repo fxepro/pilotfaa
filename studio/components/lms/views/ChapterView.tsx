@@ -213,9 +213,9 @@ export default function ChapterView() {
               </div>
             </div>
             {quizPhase === 'idle' && (
-              <button className="pf-btn-primary" onClick={startQuiz}>
-                Start Quiz →
-              </button>
+              chapterBank && chapterBank.question_count > 0
+                ? <button className="pf-btn-primary" onClick={startQuiz}>Start Quiz →</button>
+                : <span style={{ fontSize: 12, color: 'var(--pf-ink-dim)', fontStyle: 'italic' }}>Questions coming soon</span>
             )}
             {quizPhase === 'loading' && (
               <span style={{ fontSize: 13, color: 'var(--pf-ink-dim)' }}>Loading…</span>
@@ -344,10 +344,10 @@ export default function ChapterView() {
         </div>
       )}
 
-      {/* No quiz available */}
+      {/* No quiz bank exists at all */}
       {!chapterBank && (
         <div style={{ marginTop: 32, padding: '20px 24px', background: 'var(--pf-sky)', borderRadius: 10, fontSize: 13, color: 'var(--pf-ink-dim)', textAlign: 'center' }}>
-          Quiz for this chapter coming soon.
+          Quiz questions being prepared for this chapter.
         </div>
       )}
 

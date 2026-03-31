@@ -33,6 +33,7 @@ interface PilotFAAContextValue {
   activeChapterId: number | null
   openChapter: (chapterId: number) => void
   activeChapterData: Chapter | null
+  lastChapterId: number | null
 
   // Courses
   courses: Course[]
@@ -100,6 +101,7 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
   // Chapter drill-down
   const [activeChapterId,   setActiveChapterId]   = useState<number | null>(null)
   const [activeChapterData, setActiveChapterData] = useState<Chapter | null>(null)
+  const [lastChapterId,     setLastChapterId]      = useState<number | null>(null)
 
   // Courses
   const [courses,          setCourses]          = useState<Course[]>([])
@@ -185,6 +187,7 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
 
   const openChapter = useCallback(async (chapterId: number) => {
     setActiveChapterId(chapterId)
+    setLastChapterId(chapterId)
     setActiveView('chapter')
     // Find chapter data from the already-loaded activeCourse
     if (activeCourse) {
@@ -312,7 +315,7 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
   const value: PilotFAAContextValue = {
     activeView, setActiveView,
     activeLessonId, openLesson,
-    activeChapterId, openChapter, activeChapterData,
+    activeChapterId, openChapter, activeChapterData, lastChapterId,
     courses, activeCourse, activeCourseSlug, setActiveCourseSlug, loadingCourses,
     enrollments, activeEnrollment, enroll,
     activeLesson, loadingLesson,

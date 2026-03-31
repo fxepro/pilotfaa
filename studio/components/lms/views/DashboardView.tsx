@@ -4,7 +4,7 @@ import { usePilotFAA } from '@/contexts/PilotFAAContext'
 
 export default function DashboardView() {
   const {
-    setActiveView, openChapter,
+    setActiveView, openChapter, lastChapterId,
     activeCourse, activeEnrollment, stats,
     weakTopics,
   } = usePilotFAA()
@@ -32,7 +32,7 @@ export default function DashboardView() {
           {weakCount > 0 && ` ${weakCount} weak topic${weakCount > 1 ? 's' : ''} to review.`}
         </div>
         <div className="pf-hero-actions">
-          <button className="pf-btn-white"       onClick={() => setActiveView('lesson')}>▶ Resume Lesson</button>
+          <button className="pf-btn-white"       onClick={() => lastChapterId ? openChapter(lastChapterId) : setActiveView('lesson')}>▶ Resume</button>
           <button className="pf-btn-ghost-white" onClick={() => setActiveView('quiz')}>✏️ Take a Quiz</button>
           <button className="pf-btn-ghost-white" onClick={() => setActiveView('tutor')}>🤖 Ask AI Tutor</button>
         </div>
