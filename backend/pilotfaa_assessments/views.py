@@ -34,12 +34,13 @@ WEAK_MIN_ATTEMPTS     = 3    # must have ≥ this many attempts to flag weak
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def bank_list(request, course_id):
+def bank_list(request):
     """GET /api/pilotfaa/quiz/banks/?course_id=<id>"""
-    qs = QuestionBank.objects.filter(
-        course_id=course_id, is_active=True
-    ).order_by('bank_type', 'name')
-    return Response(QuestionBankSerializer(qs, many=True).data)
+    course_id = request.query_params.get('course_id')
+    qs = QuestionBank.objects.filter(is_active=True)
+    if course_id:
+        qs = qs.filter(course_id=course_id)
+    return Response(QuestionBankSerializer(qs.order_by('bank_type', 'name'), many=True).data)
 
 
 @api_view(['GET'])
