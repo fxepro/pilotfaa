@@ -106,7 +106,7 @@ export default function ChapterView() {
   }
 
   return (
-    <div className="pf-view-pad" style={{ maxWidth: 860, margin: '0 auto' }}>
+    <div className="pf-view-pad">
 
       {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, fontSize: 13, color: 'var(--pf-ink-dim)' }}>
@@ -140,9 +140,9 @@ export default function ChapterView() {
       </div>
 
       {/* ── Lessons ─────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 8 }}>
-        <div className="pf-section-heading" style={{ marginBottom: 12 }}>Lessons</div>
-        <div className="pf-card" style={{ marginBottom: 0 }}>
+      {/* Lessons list */}
+      <div className="pf-section-heading">Lessons</div>
+      <div className="pf-card" style={{ marginBottom: 24 }}>
           {activeChapterData.lessons.length === 0 ? (
             <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--pf-ink-dim)', fontSize: 14 }}>
               Lessons coming soon for this chapter.
@@ -184,7 +184,6 @@ export default function ChapterView() {
             ))
           )}
         </div>
-      </div>
 
       {/* ── Quiz section ─────────────────────────────────────────────── */}
       {chapterBank && activeEnrollment && (
