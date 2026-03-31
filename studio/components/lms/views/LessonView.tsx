@@ -30,7 +30,7 @@ export default function LessonView() {
     activeLesson, loadingLesson,
     activeEnrollment, activeChapterData,
     startStudySession, endStudySession,
-    setActiveView, openChapter, activeChapterId,
+    setActiveView, openChapter, openLesson, activeChapterId,
     quizBanks,
   } = usePilotFAA()
 
@@ -380,47 +380,141 @@ export default function LessonView() {
         </div>
       </div>
 
-      {/* ── Right tab strip ───────────────────────────────────────────────── */}
+      {/* ── Right sidebar — lesson list + tabs ──────────────────────────── */}
       <div style={{
-        width: 40, flexShrink: 0,
+        width: 220, flexShrink: 0,
         background: 'var(--pf-white)',
         borderLeft: '1px solid var(--pf-rule)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        paddingTop: 16, gap: 8, zIndex: 10,
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden', zIndex: 10,
       }}>
-        {/* PHAK tab */}
-        <button
-          onClick={() => setPaneOpen(p => p === 'phak' ? null : 'phak')}
-          title="PHAK Reference"
-          style={{
-            width: 32, height: 64, borderRadius: 6, border: 'none', cursor: 'pointer',
-            background: paneOpen === 'phak' ? 'var(--pf-cobalt)' : 'var(--pf-sky)',
-            color: paneOpen === 'phak' ? '#fff' : 'var(--pf-ink-dim)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: 2, fontSize: 16,
-            transition: 'all 0.2s',
-          }}
-        >
-          <span>📖</span>
-          <span style={{ fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.5px', fontWeight: 700 }}>PHAK</span>
-        </button>
 
-        {/* ACS tab */}
-        <button
-          onClick={() => setPaneOpen(p => p === 'acs' ? null : 'acs')}
-          title="ACS Standards"
-          style={{
-            width: 32, height: 64, borderRadius: 6, border: 'none', cursor: 'pointer',
-            background: paneOpen === 'acs' ? 'var(--pf-cobalt)' : 'var(--pf-sky)',
-            color: paneOpen === 'acs' ? '#fff' : 'var(--pf-ink-dim)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: 2, fontSize: 16,
-            transition: 'all 0.2s',
-          }}
-        >
-          <span>🎯</span>
-          <span style={{ fontSize: 7, fontFamily: 'monospace', letterSpacing: '0.5px', fontWeight: 700 }}>ACS</span>
-        </button>
+        {/* Chapter lessons list */}
+        {activeChapterData && (
+          <>
+            <div style={{
+              padding: '12px 14px 8px',
+              fontSize: 10, fontFamily: 'monospace', color: 'var(--pf-ink-dim)',
+              letterSpacing: '1.5px', textTransform: 'uppercase',
+              borderBottom: '1px solid var(--pf-rule-light)',
+              flexShrink: 0,
+            }}>
+              Ch.{activeChapterData.chapter_number} Lessons
+            </div>
+            <div style={{ overflowY: 'auto', flex: 1 }}>
+              {activeChapterData.lessons.map((lesson: any) => {
+                const isActive = lesson.id === activeLesson?.id
+                return (
+                  <div
+                    key={lesson.id}
+                    onClick={() => openLesson(lesson.id)}
+                    style={{
+                      padding: '10px 14px',
+                      borderBottom: '1px solid var(--pf-rule-light)',
+                      cursor: 'pointer',
+                      background: isActive ? 'var(--pf-cobalt-lt)' : 'transparent',
+                      borderLeft: isActive ? '3px solid var(--pf-cobalt)' : '3px solid transparent',
+                      display: 'flex', gap: 10, alignItems: 'flex-start',
+                    }}
+                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--pf-sky)' }}
+                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <div style={{
+                      width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+                      background: isActive ? 'var(--pf-cobalt)' : 'var(--pf-sky)',
+                      color: isActive ? '#fff' : 'var(--pf-ink-dim)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 9, fontFamily: 'monospace', fontWeight: 700,
+                    }}>
+                      {lesson.lesson_number}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: 12, fontWeight: isActive ? 600 : 400,
+                        color: isActive ? 'var(--pf-cobalt)' : 'var(--pf-ink)',
+                        lineHeight: 1.4, marginBottom: 2,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {lesson.title}
+                      </div>
+                      {lesson.duration_minutes && (
+                        <div style={{ fontSize: 10, color: 'var(--pf-ink-dim)' }}>
+                          {lesson.duration_minutes} min
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* Quiz shortcut at bottom of lesson list */}
+              {chapterBank && chapterBank.question_count > 0 && (
+                <div
+                  onClick={() => activeChapterId && openChapter(activeChapterId)}
+                  style={{
+                    padding: '10px 14px', cursor: 'pointer',
+                    display: 'flex', gap: 10, alignItems: 'center',
+                    background: 'var(--pf-cobalt-lt)',
+                    borderLeft: '3px solid var(--pf-cobalt)',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.8')}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                >
+                  <div style={{
+                    width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+                    background: 'var(--pf-cobalt)', color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 12,
+                  }}>✏️</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--pf-cobalt)' }}>
+                      Chapter Quiz
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--pf-ink-dim)' }}>
+                      {chapterBank.question_count} questions
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Bottom tab buttons — PHAK and ACS */}
+        <div style={{
+          borderTop: '1px solid var(--pf-rule)',
+          display: 'flex', flexShrink: 0,
+        }}>
+          <button
+            onClick={() => setPaneOpen(p => p === 'phak' ? null : 'phak')}
+            title="PHAK Reference"
+            style={{
+              flex: 1, padding: '10px 0', border: 'none', cursor: 'pointer',
+              background: paneOpen === 'phak' ? 'var(--pf-cobalt)' : 'var(--pf-sky)',
+              color: paneOpen === 'phak' ? '#fff' : 'var(--pf-ink-dim)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              fontSize: 16, transition: 'all 0.2s',
+              borderRight: '1px solid var(--pf-rule)',
+            }}
+          >
+            <span>📖</span>
+            <span style={{ fontSize: 8, fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.5px' }}>PHAK</span>
+          </button>
+          <button
+            onClick={() => setPaneOpen(p => p === 'acs' ? null : 'acs')}
+            title="ACS Standards"
+            style={{
+              flex: 1, padding: '10px 0', border: 'none', cursor: 'pointer',
+              background: paneOpen === 'acs' ? 'var(--pf-cobalt)' : 'var(--pf-sky)',
+              color: paneOpen === 'acs' ? '#fff' : 'var(--pf-ink-dim)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              fontSize: 16, transition: 'all 0.2s',
+            }}
+          >
+            <span>🎯</span>
+            <span style={{ fontSize: 8, fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.5px' }}>ACS</span>
+          </button>
+        </div>
       </div>
 
       {/* ── Slide-in reference pane ───────────────────────────────────────── */}
