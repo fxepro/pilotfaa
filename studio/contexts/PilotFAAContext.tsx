@@ -15,7 +15,8 @@ import {
 // ─── View IDs ─────────────────────────────────────────────────────────────────
 
 export type ViewId =
-  | 'dashboard' | 'courses'     | 'courseDetail' | 'chapter'
+  | 'dashboard' | 'courses'     | 'courseDetail' | 'courseOutline'
+  | 'chapter'
   | 'lesson'    | 'tutor'       | 'quiz'
   | 'bookmarks' | 'notes'       | 'phak'
   | 'faraim'    | 'acs'         | 'progress'

@@ -66,7 +66,20 @@
 .pf-cd-info { flex: 1; }
 .pf-cd-name { font-size: 13px; font-weight: 600; }
 .pf-cd-sub  { font-size: 11px; color: var(--pf-ink-dim); }
-.pf-cd-check { color: var(--pf-cobalt); }
+.pf-cd-check { color: var(--pf-cobalt); flex-shrink: 0; }
+.pf-cd-item-muted { cursor: default; }
+.pf-cd-item-muted:hover { background: transparent; }
+.pf-cd-enroll {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--pf-cobalt);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--pf-cobalt-mid);
+  flex-shrink: 0;
+}
+.pf-cd-enroll:hover { background: var(--pf-cobalt-lt); }
 .pf-cd-add { color: var(--pf-cobalt); font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; padding: 11px 14px; border-top: 1px solid var(--pf-rule-light); cursor: pointer; }
 .pf-cd-add:hover { background: var(--pf-sky); }
 .pf-nav-scroll { flex: 1; overflow-y: auto; padding: 8px 10px; }

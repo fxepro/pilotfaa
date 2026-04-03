@@ -5,6 +5,7 @@ import Link from 'next/link'
 import axios from 'axios'
 import { usePilotFAA, type ViewId } from '@/contexts/PilotFAAContext'
 import { PilotFAABrandContent } from '@/components/pilotfaa-brand'
+import { PILOTFAA_COURSES } from '@/lib/pilotfaa-marketing'
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -16,6 +17,7 @@ const NAV_SECTIONS = [
     items: [
       { id: 'dashboard' as ViewId, icon: '🗺',  label: 'Dashboard' },
       { id: 'courses'   as ViewId, icon: '📚',  label: 'All Courses' },
+      { id: 'courseOutline' as ViewId, icon: '📋', label: 'Course outline' },
       { id: 'lesson'    as ViewId, icon: '▶️',  label: 'Lesson Player' },
       { id: 'tutor'     as ViewId, icon: '🤖',  label: 'AI Tutor', badge: 'AI' },
     ],
@@ -43,7 +45,7 @@ export default function LMSSidebar() {
   const {
     activeView, setActiveView,
     courses, activeCourse, activeCourseSlug, setActiveCourseSlug,
-    activeEnrollment,
+    activeEnrollment, enrollments,
     bookmarkCount, noteCount,
   } = usePilotFAA()
 
@@ -82,6 +84,12 @@ export default function LMSSidebar() {
 
   const progressPct = activeEnrollment?.progress_pct ?? 0
 
+  const activeCatalog = PILOTFAA_COURSES.find((c) => c.checkoutSlug === activeCourseSlug)
+  const activeApiCourse = courses.find((c) => c.slug === activeCourseSlug)
+  const switcherEmoji = activeApiCourse?.icon_emoji ?? activeCatalog?.emoji ?? '✈'
+  const switcherName =
+    activeApiCourse?.short_name ?? activeCatalog?.name ?? 'Select a course'
+
   function getCount(id: ViewId): number | undefined {
     if (id === 'bookmarks') return bookmarkCount
     if (id === 'notes')     return noteCount
@@ -107,12 +115,8 @@ export default function LMSSidebar() {
         >
           <div className="pf-cs-label">Active Course</div>
           <div className="pf-cs-row">
-            <div className="pf-cs-badge">
-              {courses.find(c => c.slug === activeCourseSlug)?.icon_emoji ?? '✈'}
-            </div>
-            <div className="pf-cs-name">
-              {courses.find(c => c.slug === activeCourseSlug)?.short_name ?? 'Loading…'}
-            </div>
+            <div className="pf-cs-badge">{switcherEmoji}</div>
+            <div className="pf-cs-name">{switcherName}</div>
             <div className="pf-cs-chevron">▼</div>
           </div>
         </div>
@@ -120,30 +124,70 @@ export default function LMSSidebar() {
         {/* Dropdown */}
         {dropdownOpen && (
           <div className="pf-course-dropdown">
-            {courses.map(course => (
-              <div
-                key={course.slug}
-                className={`pf-cd-item${course.slug === activeCourseSlug ? ' active' : ''}`}
-                onClick={() => {
-                  setActiveCourseSlug(course.slug)
-                  setDropdownOpen(false)
-                }}
-              >
-                <div className="pf-cs-badge">{course.icon_emoji}</div>
-                <div className="pf-cd-info">
-                  <div className="pf-cd-name">{course.name}</div>
-                  <div className="pf-cd-sub">{course.primary_source_ref}</div>
+            {PILOTFAA_COURSES.map((cat) => {
+              const apiCourse = courses.find((c) => c.slug === cat.checkoutSlug)
+              const enrolled = enrollments.some((e) => e.course_slug === cat.checkoutSlug)
+              const canSwitch = enrolled && Boolean(apiCourse)
+              const isActive = cat.checkoutSlug === activeCourseSlug
+
+              return (
+                <div
+                  key={cat.checkoutSlug}
+                  className={`pf-cd-item${isActive ? ' active' : ''}${!enrolled ? ' pf-cd-item-muted' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    if (canSwitch) {
+                      void setActiveCourseSlug(cat.checkoutSlug)
+                      setDropdownOpen(false)
+                    } else if (enrolled) {
+                      setActiveView('courses')
+                      setDropdownOpen(false)
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      if (canSwitch) {
+                        void setActiveCourseSlug(cat.checkoutSlug)
+                        setDropdownOpen(false)
+                      } else if (enrolled) {
+                        setActiveView('courses')
+                        setDropdownOpen(false)
+                      }
+                    }
+                  }}
+                >
+                  <div className="pf-cs-badge">{apiCourse?.icon_emoji ?? cat.emoji}</div>
+                  <div className="pf-cd-info">
+                    <div className="pf-cd-name">{cat.name}</div>
+                    <div className="pf-cd-sub">{cat.sub}</div>
+                  </div>
+                  {enrolled && <span className="pf-tag pf-tag-green" style={{ fontSize: 10, padding: '2px 6px' }}>Enrolled</span>}
+                  {!enrolled && (
+                    <Link
+                      href={`/checkout?course=${encodeURIComponent(cat.checkoutSlug)}`}
+                      className="pf-cd-enroll"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDropdownOpen(false)
+                      }}
+                    >
+                      Enroll
+                    </Link>
+                  )}
+                  {isActive && <span className="pf-cd-check">✓</span>}
                 </div>
-                {course.slug === activeCourseSlug && (
-                  <span className="pf-cd-check">✓</span>
-                )}
-              </div>
-            ))}
+              )
+            })}
             <div
               className="pf-cd-add"
-              onClick={() => { setActiveView('courses'); setDropdownOpen(false) }}
+              onClick={() => {
+                setActiveView('courses')
+                setDropdownOpen(false)
+              }}
             >
-              ＋ Browse all courses
+              ＋ All courses & details
             </div>
           </div>
         )}
@@ -206,7 +250,7 @@ export default function LMSSidebar() {
       {/* Footer progress bar */}
       <div className="pf-sidebar-footer">
         <div className="pf-sf-prog-label">
-          <span>{activeCourse?.short_name ?? 'No course'} Progress</span>
+          <span>{activeCourse?.short_name ?? activeCatalog?.name ?? 'No course'} Progress</span>
           <strong>{progressPct}%</strong>
         </div>
         <div className="pf-sf-bar">

@@ -1,51 +1,96 @@
 'use client'
 
 import { usePilotFAA } from '@/contexts/PilotFAAContext'
+import { PILOTFAA_COURSES } from '@/lib/pilotfaa-marketing'
+
+function formatStudyTime(totalSeconds: number) {
+  if (totalSeconds <= 0) return '—'
+  const h = Math.floor(totalSeconds / 3600)
+  const m = Math.floor((totalSeconds % 3600) / 60)
+  if (h > 0) return `${h}h ${m}m`
+  return `${m}m`
+}
 
 export default function DashboardView() {
   const {
-    setActiveView, openChapter, lastChapterId,
-    activeCourse, activeEnrollment, stats,
+    setActiveView,
+    activeCourseSlug,
+    enrollments,
+    courses,
+    setActiveCourseSlug,
+    openLesson,
+    stats,
     weakTopics,
   } = usePilotFAA()
 
-  const progressPct = activeEnrollment?.progress_pct ?? 0
   const hoursStudied = stats?.hours_studied ?? 0
-  const lessonsDone  = stats?.lessons_done  ?? 0
-  const quizAvg      = stats?.quiz_avg_pct  ?? 0
-  const weakCount    = stats?.weak_topics   ?? 0
+  const lessonsDone = stats?.lessons_done ?? 0
+  const quizAvg = stats?.quiz_avg_pct ?? 0
+  const weakCount = stats?.weak_topics ?? weakTopics.length
+
+  const enrolledCount = enrollments.length
+  const avgProgress =
+    enrolledCount > 0
+      ? Math.round(
+          enrollments.reduce((acc, e) => acc + (e.progress_pct ?? 0), 0) / enrolledCount
+        )
+      : 0
 
   return (
     <div className="pf-view-pad">
-
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <div className="pf-dash-hero">
-        <div className="pf-hero-eyebrow">
-          ▸ {activeCourse?.short_name ?? 'Ground School'} · FAA PHAK
-        </div>
+        <div className="pf-hero-eyebrow">▸ Dashboard</div>
         <div className="pf-hero-title">
-          Welcome back.<br />
+          Welcome back.
+          <br />
           <em>Clear skies ahead.</em>
         </div>
         <div className="pf-hero-sub">
-          You&apos;re {progressPct}% through {activeCourse?.short_name ?? 'your course'}.
-          {weakCount > 0 && ` ${weakCount} weak topic${weakCount > 1 ? 's' : ''} to review.`}
+          {enrolledCount === 0
+            ? 'Enroll in a course to start tracking progress here.'
+            : `${enrolledCount} enrolled course${enrolledCount !== 1 ? 's' : ''} · average progress ${avgProgress}%`}
+          {weakCount > 0 && ` · ${weakCount} weak topic${weakCount > 1 ? 's' : ''} to review.`}
         </div>
         <div className="pf-hero-actions">
-          <button className="pf-btn-white"       onClick={() => lastChapterId ? openChapter(lastChapterId) : setActiveView('lesson')}>▶ Resume</button>
-          <button className="pf-btn-ghost-white" onClick={() => setActiveView('quiz')}>✏️ Take a Quiz</button>
-          <button className="pf-btn-ghost-white" onClick={() => setActiveView('tutor')}>🤖 Ask AI Tutor</button>
+          <button className="pf-btn-white" onClick={() => setActiveView('courses')}>
+            All courses
+          </button>
+          <button className="pf-btn-ghost-white" onClick={() => setActiveView('quiz')}>
+            ✏️ Quizzes
+          </button>
+          <button className="pf-btn-ghost-white" onClick={() => setActiveView('tutor')}>
+            🤖 AI Tutor
+          </button>
         </div>
       </div>
 
-      {/* ── Stats ────────────────────────────────────────────────────────── */}
       <div className="pf-stats-row">
         {[
-          { label: 'Hours Studied', value: hoursStudied.toFixed(1), note: 'Total study time',        color: 'var(--pf-cobalt)' },
-          { label: 'Quiz Average',  value: `${quizAvg}%`,           note: 'Across all attempts',     color: 'var(--pf-green)'  },
-          { label: 'Lessons Done',  value: String(lessonsDone),      note: `of ${activeCourse?.total_lessons ?? '—'}`, color: 'var(--pf-gold)' },
-          { label: 'Weak Topics',   value: String(weakCount),        note: weakCount > 0 ? '⚠ Need review' : '✓ All strong', color: weakCount > 0 ? 'var(--pf-red)' : 'var(--pf-green)' },
-        ].map(s => (
+          {
+            label: 'Hours studied',
+            value: hoursStudied.toFixed(1),
+            note: 'Total study time',
+            color: 'var(--pf-cobalt)',
+          },
+          {
+            label: 'Quiz average',
+            value: `${quizAvg}%`,
+            note: 'Across attempts',
+            color: 'var(--pf-green)',
+          },
+          {
+            label: 'Lessons done',
+            value: String(lessonsDone),
+            note: 'Completed',
+            color: 'var(--pf-gold)',
+          },
+          {
+            label: 'Weak topics',
+            value: String(weakCount),
+            note: weakCount > 0 ? '⚠ Need review' : '✓ None flagged',
+            color: weakCount > 0 ? 'var(--pf-red)' : 'var(--pf-green)',
+          },
+        ].map((s) => (
           <div className="pf-stat-card" key={s.label}>
             <div className="pf-stat-accent" style={{ background: s.color }} />
             <div className="pf-stat-label">{s.label}</div>
@@ -55,94 +100,109 @@ export default function DashboardView() {
         ))}
       </div>
 
-      {/* ── Course content by Module ──────────────────────────────────────── */}
-      {activeCourse && activeCourse.modules.length > 0 ? (
-        <>
-          <div className="pf-section-heading">
-            {activeCourse.short_name} — Course Outline
-            <span className="pf-tag pf-tag-gold">{activeCourse.primary_source_ref}</span>
-          </div>
+      <div className="pf-section-heading">Your enrollments</div>
+      <p style={{ fontSize: 13, color: 'var(--pf-ink-dim)', margin: '-8px 0 16px' }}>
+        Progress and study time for courses you&apos;re enrolled in.
+      </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {activeCourse.modules.map((mod, modIdx) => (
-              <div key={mod.id} className="pf-card" style={{ overflow: 'hidden' }}>
-
-                {/* Module header */}
-                <div style={{
-                  padding: '14px 20px',
-                  background: 'var(--pf-cobalt-lt)',
-                  borderBottom: '1px solid var(--pf-rule)',
-                  display: 'flex', alignItems: 'center', gap: 12,
-                }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: 7,
-                    background: 'var(--pf-cobalt)', color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 12, fontWeight: 700, flexShrink: 0,
-                  }}>{modIdx + 1}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--pf-cobalt)' }}>{mod.title}</div>
-                    {mod.description && (
-                      <div style={{ fontSize: 12, color: 'var(--pf-ink-dim)', marginTop: 2 }}>{mod.description}</div>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--pf-ink-dim)', fontFamily: 'monospace' }}>
-                    {mod.chapters.length} chapter{mod.chapters.length !== 1 ? 's' : ''}
-                  </div>
-                </div>
-
-                {/* Chapters inside module */}
-                {mod.chapters.map((ch, idx) => (
-                  <div
-                    key={ch.id}
-                    className="pf-chap-row"
-                    onClick={() => openChapter(ch.id)}
-                    style={{
-                      cursor: 'pointer',
-                      borderBottom: idx < mod.chapters.length - 1 ? '1px solid var(--pf-rule-light)' : 'none',
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--pf-sky)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <div className="pf-chap-num">{ch.chapter_number}</div>
-                    <div className="pf-chap-info">
-                      <div className="pf-chap-title">Ch.{ch.chapter_number} — {ch.title}</div>
-                      <div className="pf-chap-sub">
-                        {ch.lessons.length} lesson{ch.lessons.length !== 1 ? 's' : ''}
-                        {ch.source_page_start && (
-                          <span style={{ marginLeft: 8, fontFamily: 'monospace', fontSize: 10 }}>
-                            pp.{ch.source_page_start}–{ch.source_page_end}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="pf-chap-mini-bar">
-                      <div className="pf-cmb-track">
-                        <div className="pf-cmb-fill" style={{ width: '0%' }} />
-                      </div>
-                    </div>
-                    <div style={{ color: 'var(--pf-ink-dim)', fontSize: 18, marginLeft: 8 }}>›</div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </>
-      ) : activeCourse ? (
-        /* Course loaded but no modules yet */
-        <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--pf-ink-dim)' }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>📖</div>
-          <div style={{ fontSize: 15, marginBottom: 8 }}>Course content is being prepared.</div>
-          <div style={{ fontSize: 13 }}>Run <code>python seed_pilotfaa.py</code> in the backend to populate lessons.</div>
+      {enrollments.length === 0 ? (
+        <div className="pf-card pf-card-p" style={{ textAlign: 'center', padding: '32px 20px', color: 'var(--pf-ink-dim)' }}>
+          <div style={{ fontSize: 15, marginBottom: 12 }}>No enrollments yet.</div>
+          <button type="button" className="pf-btn-primary" onClick={() => setActiveView('courses')}>
+            Browse courses
+          </button>
         </div>
       ) : (
-        /* No course enrolled */
-        <div style={{ textAlign: 'center', padding: '48px 20px' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>✈</div>
-          <div style={{ fontSize: 16, marginBottom: 12 }}>No course loaded yet.</div>
-          <button className="pf-btn-primary" onClick={() => setActiveView('courses')}>
-            Browse Courses →
-          </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {enrollments.map((enr) => {
+            const cat = PILOTFAA_COURSES.find((c) => c.checkoutSlug === enr.course_slug)
+            const api = courses.find((c) => c.slug === enr.course_slug)
+            const isActive = enr.course_slug === activeCourseSlug
+            const pct = Math.round(enr.progress_pct ?? 0)
+            const title = cat?.name ?? enr.course_name
+            const sub = cat?.sub ?? enr.course_slug.replace(/-/g, ' ')
+            const emoji = cat?.emoji ?? '📘'
+            const accent = cat?.color ?? 'var(--pf-cobalt)'
+
+            return (
+              <div
+                key={enr.id}
+                className="pf-card pf-card-p"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'auto 1fr auto auto',
+                  gap: 14,
+                  alignItems: 'center',
+                  borderLeft: `4px solid ${accent}`,
+                }}
+              >
+                <div style={{ fontSize: 28 }}>{emoji}</div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14 }}>{title}</div>
+                  <div style={{ fontSize: 12, color: 'var(--pf-ink-dim)' }}>{sub}</div>
+                  <div style={{ fontSize: 11, color: 'var(--pf-ink-dim)', marginTop: 4, fontFamily: 'monospace' }}>
+                    {api ? `${api.total_lessons} lessons` : cat ? `${cat.lessons} lessons` : '—'}
+                    <span style={{ marginLeft: 10 }}>· study {formatStudyTime(enr.total_time_seconds)}</span>
+                    {enr.last_lesson_title && (
+                      <span style={{ marginLeft: 10 }}>· last: {enr.last_lesson_title}</span>
+                    )}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: 'var(--pf-ink-dim)',
+                      textTransform: 'uppercase' as const,
+                      letterSpacing: '0.06em',
+                    }}
+                  >
+                    Progress
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 800,
+                      fontFamily: 'JetBrains Mono, monospace',
+                      color: 'var(--pf-cobalt)',
+                    }}
+                  >
+                    {pct}%
+                  </div>
+                  {isActive && (
+                    <div style={{ fontSize: 11, marginTop: 2 }}>
+                      <span className="pf-tag pf-tag-blue" style={{ fontSize: 10 }}>
+                        Active
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'stretch' }}>
+                  {api ? (
+                    <>
+                      <button
+                        type="button"
+                        className="pf-btn-primary"
+                        style={{ fontSize: 11, padding: '6px 12px', whiteSpace: 'nowrap' }}
+                        onClick={() => {
+                          void setActiveCourseSlug(enr.course_slug)
+                          if (enr.last_lesson != null) {
+                            openLesson(enr.last_lesson)
+                          } else {
+                            setActiveView('lesson')
+                          }
+                        }}
+                      >
+                        {enr.last_lesson != null ? 'Resume' : 'Open'}
+                      </button>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: 11, color: 'var(--pf-ink-dim)', maxWidth: 120 }}>Content pending</span>
+                  )}
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

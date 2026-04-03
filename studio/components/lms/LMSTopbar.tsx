@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { usePilotFAA, type ViewId } from '@/contexts/PilotFAAContext'
+import { PILOTFAA_COURSES } from '@/lib/pilotfaa-marketing'
 
 const PAGE_INFO: Record<ViewId, { title: string; breadcrumb: string }> = {
-  dashboard:    { title: 'Dashboard',       breadcrumb: 'Private Pilot' },
+  dashboard:    { title: 'Dashboard',       breadcrumb: '' },
   courses:      { title: 'All Courses',     breadcrumb: 'Course Catalog' },
   courseDetail: { title: 'Course',          breadcrumb: 'Course Overview' },
+  courseOutline: { title: 'Course outline', breadcrumb: 'Modules & chapters' },
   chapter:      { title: 'Chapter',         breadcrumb: 'Lessons' },
   lesson:       { title: 'Lesson Player',   breadcrumb: 'Lesson' },
   tutor:        { title: 'AI Tutor',        breadcrumb: 'AI Tutor Session' },
@@ -20,10 +22,12 @@ const PAGE_INFO: Record<ViewId, { title: string; breadcrumb: string }> = {
 }
 
 export default function LMSTopbar() {
-  const { activeView, activeCourse, activeLesson, activeChapterData } = usePilotFAA()
+  const { activeView, activeCourse, activeLesson, activeChapterData, activeCourseSlug } = usePilotFAA()
   const [query, setQuery] = useState('')
 
   const info = PAGE_INFO[activeView] ?? { title: 'PilotFAA', breadcrumb: '' }
+  const catalogCourse = PILOTFAA_COURSES.find((c) => c.checkoutSlug === activeCourseSlug)
+  const courseLabel = activeCourse?.short_name ?? catalogCourse?.name ?? 'PilotFAA'
 
   // Dynamic breadcrumb per view
   const breadcrumb =
@@ -33,6 +37,10 @@ export default function LMSTopbar() {
       ? `Ch.${activeChapterData.chapter_number} — ${activeChapterData.title}`
     : activeView === 'courses' && activeCourse
       ? activeCourse.short_name
+    : activeView === 'dashboard'
+      ? courseLabel
+    : activeView === 'courseOutline'
+      ? courseLabel
     : info.breadcrumb
 
   return (
@@ -40,8 +48,8 @@ export default function LMSTopbar() {
       <div className="pf-topbar-left">
         <div className="pf-page-title">{info.title}</div>
         <div className="pf-breadcrumb">
-          <span>{activeCourse?.short_name ?? 'PilotFAA'}</span>
-          {breadcrumb !== (activeCourse?.short_name ?? '') && (
+          <span>{courseLabel}</span>
+          {breadcrumb && breadcrumb !== courseLabel && (
             <> › {breadcrumb}</>
           )}
         </div>

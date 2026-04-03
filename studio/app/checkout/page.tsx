@@ -49,6 +49,17 @@ interface DealInfo {
   is_valid: boolean;
 }
 
+function isPayPalClientConfigured(): boolean {
+  const id = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+  if (id == null || typeof id !== "string") return false;
+  const t = id.trim();
+  return (
+    t.length > 0 &&
+    t !== "YOUR_CLIENT_ID" &&
+    t !== "your_paypal_client_id_here"
+  );
+}
+
 function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -59,7 +70,9 @@ function CheckoutContent() {
   const [paypalLoading, setPaypalLoading] = useState(false);
   const [coinbaseLoading, setCoinbaseLoading] = useState(false);
   const [stripeLoading, setStripeLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("paypal");
+  const [activeTab, setActiveTab] = useState(() =>
+    isPayPalClientConfigured() ? "paypal" : "stripe"
+  );
   const [paypalError, setPaypalError] = useState<string | null>(null);
   const [coinbaseError, setCoinbaseError] = useState<string | null>(null);
   const [stripeError, setStripeError] = useState<string | null>(null);
@@ -379,26 +392,9 @@ function CheckoutContent() {
   }, [searchParams, router, activeTab]);
 
   const renderPayPalButton = useCallback(() => {
-    console.log('renderPayPalButton called');
-    const container = document.getElementById('paypal-button-container');
-    if (!container) {
-      console.error('PayPal button container not found');
-      setPaypalError('PayPal button container not found');
-      return;
-    }
-    
-    if (!plan) {
-      console.error('Plan not available');
-      return;
-    }
-    
-    if (!(window as any).paypal) {
-      console.error('PayPal SDK not loaded');
-      setPaypalError('PayPal SDK not loaded');
-      return;
-    }
-
-    console.log('Rendering PayPal button for plan:', plan?.name || 'Unknown');
+    if (!isPayPalClientConfigured()) return;
+    const container = document.getElementById("paypal-button-container");
+    if (!container || !plan || !(window as any).paypal) return;
 
     // Clear existing buttons
     container.innerHTML = '';
@@ -484,7 +480,6 @@ function CheckoutContent() {
           setPaypalLoading(false);
           return response.data.subscriptionID;
         } catch (error: any) {
-          console.error('Error creating subscription:', error);
           setPaypalLoading(false);
           const errorMessage = error.response?.data?.error || error.message || 'Failed to create subscription. Please try again.';
           alert(errorMessage);
@@ -574,123 +569,84 @@ function CheckoutContent() {
             router.push(`/checkout/success?${successParams}`);
           }
         } catch (error: any) {
-          console.error('Error confirming subscription:', error);
           const errorMessage = error.response?.data?.error || error.message || 'Failed to confirm subscription. Please try again.';
           alert(errorMessage);
         } finally {
           setPaypalLoading(false);
         }
       },
-      onError: function(err: any) {
-        console.error('PayPal error:', err);
+      onError: function() {
         setPaypalLoading(false);
         alert('An error occurred with PayPal. Please try again.');
       },
-      onCancel: function(data: any) {
-        console.log('User cancelled PayPal payment');
+      onCancel: function() {
         setPaypalLoading(false);
       }
     }).render('#paypal-button-container');
-    } catch (error: any) {
-      console.error('Error rendering PayPal button:', error);
-      setPaypalError(`Failed to render PayPal button: ${error.message}`);
+    } catch {
+      setPaypalError("PayPal could not start. Try again or use another payment method.");
     }
   }, [plan, deal, billingPeriod, router]);
 
   useEffect(() => {
-    // Load PayPal SDK (only after login/register so payment DOM exists)
-    if (activeTab === 'paypal' && typeof window !== 'undefined' && plan && isAuthenticated) {
-      setPaypalError(null);
-      
-      // In Next.js, NEXT_PUBLIC_ vars are available at build time
-      // They should be accessible via process.env in client components
-      const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-      
-      // Debug: Log environment check
-      console.log('🔍 PayPal Environment Check:', {
-        hasPayPalClientId: !!clientId,
-        clientIdLength: clientId?.length || 0,
-        clientIdPreview: clientId ? `${clientId.substring(0, 10)}...` : 'NOT SET',
-        // Note: process.env in browser only shows NEXT_PUBLIC_ vars that were set at build time
-      });
-      
-      if (!clientId || clientId === 'YOUR_CLIENT_ID' || clientId === 'your_paypal_client_id_here' || clientId.trim() === '') {
-        setPaypalError('PayPal Client ID not configured. Please set NEXT_PUBLIC_PAYPAL_CLIENT_ID in your .env.local file and restart the dev server.');
-        console.error('PayPal Client ID not configured. Current value:', clientId);
-        console.error('Make sure:');
-        console.error('1. .env.local file exists in the studio/ directory');
-        console.error('2. NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_actual_client_id is in .env.local');
-        console.error('3. Dev server was restarted after adding the env var');
-        return;
-      }
-
-      // Check if PayPal SDK is already loaded
-      if ((window as any).paypal) {
-        console.log('PayPal SDK already loaded');
-        setPaypalSDKLoaded(true);
-        // Use setTimeout to ensure DOM is ready
-        setTimeout(() => {
-          renderPayPalButton();
-        }, 100);
-        return;
-      }
-
-      // Check if script is already being loaded
-      const existingScript = document.querySelector(`script[src*="paypal.com/sdk"]`);
-      if (existingScript) {
-        console.log('PayPal SDK script already exists, waiting for load...');
-        // Wait for it to load
-        const checkInterval = setInterval(() => {
-          if ((window as any).paypal) {
-            clearInterval(checkInterval);
-            setPaypalSDKLoaded(true);
-            renderPayPalButton();
-          }
-        }, 100);
-        
-        return () => clearInterval(checkInterval);
-      }
-
-      console.log('Loading PayPal SDK...');
-      const script = document.createElement('script');
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&vault=true&intent=subscription&currency=USD`;
-      script.async = true;
-      
-      script.onload = () => {
-        console.log('PayPal SDK script loaded');
-        if ((window as any).paypal) {
-          console.log('PayPal SDK available, rendering button...');
-          setPaypalSDKLoaded(true);
-          // Small delay to ensure DOM is ready
-          setTimeout(() => {
-            renderPayPalButton();
-          }, 100);
-        } else {
-          setPaypalError('PayPal SDK failed to load. Please check your Client ID.');
-          console.error('PayPal SDK not available after script load');
-        }
-      };
-      
-      script.onerror = (error) => {
-        setPaypalError('Failed to load PayPal SDK. Please check your internet connection and Client ID.');
-        console.error('PayPal SDK script failed to load:', error);
-      };
-      
-      document.body.appendChild(script);
-      console.log('PayPal SDK script added to DOM');
-
-      return () => {
-        const scriptToRemove = document.querySelector(`script[src*="paypal.com/sdk"]`);
-        if (scriptToRemove && scriptToRemove.parentNode) {
-          scriptToRemove.parentNode.removeChild(scriptToRemove);
-        }
-        setPaypalSDKLoaded(false);
-      };
-    } else {
-      // Reset state when not on PayPal tab
+    if (activeTab !== "paypal" || typeof window === "undefined" || !plan || !isAuthenticated) {
       setPaypalSDKLoaded(false);
       setPaypalError(null);
+      return;
     }
+
+    if (!isPayPalClientConfigured()) {
+      setPaypalError(null);
+      setPaypalSDKLoaded(false);
+      return;
+    }
+
+    setPaypalError(null);
+    const clientIdRaw = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    if (!clientIdRaw?.trim()) return;
+    const clientId = clientIdRaw.trim();
+
+    if ((window as any).paypal) {
+      setPaypalSDKLoaded(true);
+      const t = setTimeout(() => renderPayPalButton(), 100);
+      return () => clearTimeout(t);
+    }
+
+    const existingScript = document.querySelector(`script[src*="paypal.com/sdk"]`);
+    if (existingScript) {
+      const checkInterval = setInterval(() => {
+        if ((window as any).paypal) {
+          clearInterval(checkInterval);
+          setPaypalSDKLoaded(true);
+          renderPayPalButton();
+        }
+      }, 100);
+      return () => clearInterval(checkInterval);
+    }
+
+    const script = document.createElement("script");
+    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&vault=true&intent=subscription&currency=USD`;
+    script.async = true;
+    script.onload = () => {
+      if ((window as any).paypal) {
+        setPaypalSDKLoaded(true);
+        setTimeout(() => renderPayPalButton(), 100);
+      } else {
+        setPaypalError("PayPal did not load. Try another payment method.");
+      }
+    };
+    script.onerror = () => {
+      setPaypalError("PayPal did not load. Try another payment method.");
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      const scriptToRemove = document.querySelector(`script[src*="paypal.com/sdk"]`);
+      if (scriptToRemove?.parentNode) {
+        scriptToRemove.parentNode.removeChild(scriptToRemove);
+      }
+      setPaypalSDKLoaded(false);
+    };
   }, [activeTab, plan, billingPeriod, renderPayPalButton, isAuthenticated]);
 
   const calculatePrice = () => {
@@ -698,6 +654,8 @@ function CheckoutContent() {
     if (deal) return deal.deal_price;
     return plan.price || 0;
   };
+
+  const paypalConfigured = isPayPalClientConfigured();
 
   const courseSlugParam = searchParams.get("course");
   const catalogCourse = pilotfaaCheckoutCourseDisplay(courseSlugParam);
@@ -981,46 +939,43 @@ function CheckoutContent() {
                 </TabsList>
 
                 <TabsContent value="paypal" className="space-y-4 mt-6">
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <p className="text-sm text-blue-800">
-                      Complete your subscription using PayPal. You'll be redirected to PayPal to approve the payment.
-                    </p>
-                  </div>
-                  
-                  {paypalError && (
-                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                      <p className="text-sm text-red-800 font-medium mb-2">PayPal Error:</p>
-                      <p className="text-sm text-red-700">{paypalError}</p>
-                      {paypalError.includes('Client ID') && (
-                        <p className="text-xs text-red-600 mt-2">
-                          Add NEXT_PUBLIC_PAYPAL_CLIENT_ID to your .env.local file and restart the dev server.
+                  {paypalConfigured ? (
+                    <>
+                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <p className="text-sm text-blue-800">
+                          Complete your subscription using PayPal. You&apos;ll be redirected to PayPal to approve the payment.
                         </p>
-                      )}
-                    </div>
-                  )}
-                  
-                  {paypalLoading && (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin text-palette-primary mr-2" />
-                      <span className="text-slate-600">Processing...</span>
-                    </div>
-                  )}
-                  
-                  {!paypalError && !paypalLoading && !paypalSDKLoaded && (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin text-palette-primary mr-2" />
-                      <span className="text-slate-600">Loading PayPal...</span>
-                    </div>
-                  )}
-                  
-                  <div id="paypal-button-container" className="min-h-[200px]">
-                    {!paypalError && !paypalSDKLoaded && (
-                      <div className="flex items-center justify-center h-[200px] text-slate-400">
-                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                        <span>Loading PayPal button...</span>
                       </div>
-                    )}
-                  </div>
+                      {paypalError && (
+                        <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                          <p className="text-sm text-red-800 font-medium mb-2">PayPal</p>
+                          <p className="text-sm text-red-700">{paypalError}</p>
+                        </div>
+                      )}
+                      {paypalLoading && (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-palette-primary mr-2" />
+                          <span className="text-slate-600">Processing…</span>
+                        </div>
+                      )}
+                      {!paypalError && !paypalLoading && !paypalSDKLoaded && (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="h-6 w-6 animate-spin text-palette-primary mr-2" />
+                          <span className="text-slate-600">Loading PayPal…</span>
+                        </div>
+                      )}
+                      <div id="paypal-button-container" className="min-h-[200px]">
+                        {!paypalError && !paypalSDKLoaded && (
+                          <div className="flex items-center justify-center h-[200px] text-slate-400">
+                            <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                            <span>Loading PayPal button…</span>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div id="paypal-button-container" className="min-h-[120px]" aria-hidden />
+                  )}
                 </TabsContent>
 
                 <TabsContent value="stripe" className="space-y-4 mt-6">

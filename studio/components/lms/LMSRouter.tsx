@@ -15,6 +15,7 @@ const PhakView       = lazy(() => import('./views/PhakView'))
 const FarAimView     = lazy(() => import('./views/FarAimView'))
 const AcsView        = lazy(() => import('./views/AcsView'))
 const ProgressView   = lazy(() => import('./views/ProgressView'))
+const CourseOutlineView = lazy(() => import('./views/CourseOutlineView'))
 
 function ViewLoader() {
   return (
@@ -32,6 +33,7 @@ export default function LMSRouter() {
       {activeView === 'dashboard'    && <DashboardView />}
       {activeView === 'courses'      && <CoursesView />}
       {activeView === 'courseDetail' && <CoursesView />}
+      {activeView === 'courseOutline' && <CourseOutlineView />}
       {activeView === 'chapter'      && <ChapterView />}
       {activeView === 'lesson'       && <LessonView />}
       {activeView === 'tutor'        && <TutorView />}
