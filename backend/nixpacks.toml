@@ -1,6 +1,11 @@
-# Nixpacks (Railway) — use venv Python (Nix's `python` has no pip). "..." keeps the provider defaults.
+[phases.setup]
+nixPkgs = ['python311', 'gcc']
+
 [phases.install]
 cmds = [
-  "/opt/venv/bin/python -m pip install --upgrade pip setuptools wheel",
-  "...",
+  'pip install --upgrade pip setuptools wheel',
+  'pip install -r requirements.txt',
 ]
+
+[start]
+cmd = 'python manage.py migrate --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120'
