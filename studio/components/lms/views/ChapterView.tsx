@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { usePilotFAA } from '@/contexts/PilotFAAContext'
-import { quizApi, type Question, type QuizAttempt } from '@/lib/api/pilotfaa'
+import { quizApi, type AnswerResult, type Question, type QuizAttempt } from '@/lib/api/pilotfaa'
 
 export default function ChapterView() {
   const {
@@ -22,6 +22,7 @@ export default function ChapterView() {
   const [currentIdx,   setCurrentIdx]   = useState(0)
   const [selected,     setSelected]     = useState<string | null>(null)
   const [revealed,     setRevealed]     = useState(false)
+  const [answerResult, setAnswerResult] = useState<AnswerResult | null>(null)
   const [correctCount, setCorrectCount] = useState(0)
   const [secs,         setSecs]         = useState(0)
 
@@ -56,6 +57,7 @@ export default function ChapterView() {
       setCurrentIdx(0)
       setSelected(null)
       setRevealed(false)
+      setAnswerResult(null)
       setCorrectCount(0)
       setSecs(0)
       setQuizPhase('active')
@@ -67,14 +69,18 @@ export default function ChapterView() {
   async function handleSelect(letter: string) {
     if (revealed || !attempt || !question) return
     setSelected(letter)
-    setRevealed(true)
-    const isCorrect = letter === question.correct_letter
-    if (isCorrect) setCorrectCount(c => c + 1)
-    await quizApi.submitResponse(attempt.id, {
-      question_id:     question.id,
-      selected_letter: letter,
-      time_seconds:    secs,
-    })
+    try {
+      const result = await quizApi.submitResponse(attempt.id, {
+        question_id:     question.id,
+        selected_letter: letter,
+        time_seconds:    secs,
+      })
+      setAnswerResult(result)
+      setRevealed(true)
+      if (result.is_correct) setCorrectCount(c => c + 1)
+    } catch {
+      setSelected(null)
+    }
   }
 
   async function handleNext() {
@@ -85,6 +91,7 @@ export default function ChapterView() {
       setCurrentIdx(i => i + 1)
       setSelected(null)
       setRevealed(false)
+      setAnswerResult(null)
     }
   }
 
@@ -100,8 +107,9 @@ export default function ChapterView() {
       transition: 'all 0.15s', fontSize: 14,
     }
     if (!revealed) return { ...base, background: selected === letter ? 'var(--pf-cobalt-lt)' : '#fff' }
-    if (letter === question?.correct_letter) return { ...base, background: '#f0fdf4', border: '1.5px solid #16a34a', color: '#15803d' }
-    if (letter === selected && letter !== question?.correct_letter) return { ...base, background: '#fff0f0', border: '1.5px solid #dc2626', color: '#dc2626' }
+    const correct = answerResult?.correct_letter
+    if (letter === correct) return { ...base, background: '#f0fdf4', border: '1.5px solid #16a34a', color: '#15803d' }
+    if (letter === selected && letter !== correct) return { ...base, background: '#fff0f0', border: '1.5px solid #dc2626', color: '#dc2626' }
     return { ...base, background: '#fff', opacity: 0.5 }
   }
 
@@ -257,16 +265,16 @@ export default function ChapterView() {
 
               {/* Options */}
               <div style={{ marginBottom: 20 }}>
-                {question.options.map((opt: any) => (
+                {question.options.map((opt) => (
                   <div key={opt.letter} onClick={() => handleSelect(opt.letter)} style={optionStyle(opt.letter)}>
                     <div style={{
                       width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                      background: revealed && opt.letter === question.correct_letter
+                      background: revealed && opt.letter === answerResult?.correct_letter
                         ? '#16a34a'
-                        : revealed && opt.letter === selected && opt.letter !== question.correct_letter
+                        : revealed && opt.letter === selected && opt.letter !== answerResult?.correct_letter
                           ? '#dc2626'
                           : 'var(--pf-sky)',
-                      color: revealed && (opt.letter === question.correct_letter || opt.letter === selected)
+                      color: revealed && (opt.letter === answerResult?.correct_letter || opt.letter === selected)
                         ? '#fff' : 'var(--pf-ink)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontWeight: 700, fontSize: 12, fontFamily: 'monospace',
@@ -280,19 +288,19 @@ export default function ChapterView() {
               </div>
 
               {/* Rationale */}
-              {revealed && question.rationale && (
+              {revealed && answerResult?.rationale && (
                 <div style={{
-                  background: selected === question.correct_letter ? '#f0fdf4' : '#fff8e6',
-                  border: `1px solid ${selected === question.correct_letter ? '#16a34a' : '#f59e0b'}`,
+                  background: answerResult.is_correct ? '#f0fdf4' : '#fff8e6',
+                  border: `1px solid ${answerResult.is_correct ? '#16a34a' : '#f59e0b'}`,
                   borderRadius: 8, padding: '12px 16px', marginBottom: 20, fontSize: 13.5, lineHeight: 1.7,
                 }}>
                   <div style={{ fontWeight: 700, marginBottom: 4 }}>
-                    {selected === question.correct_letter ? '✓ Correct' : '✗ Incorrect'} — Explanation
+                    {answerResult.is_correct ? '✓ Correct' : '✗ Incorrect'} — Explanation
                   </div>
-                  <div style={{ color: 'var(--pf-ink-mid)' }}>{question.rationale}</div>
-                  {question.rationale_source_ref && (
+                  <div style={{ color: 'var(--pf-ink-mid)' }}>{answerResult.rationale}</div>
+                  {answerResult.rationale_source_ref && (
                     <div style={{ marginTop: 8, fontSize: 11, fontFamily: 'monospace', color: 'var(--pf-ink-dim)' }}>
-                      📄 {question.rationale_source_ref}
+                      📄 {answerResult.rationale_source_ref}
                     </div>
                   )}
                 </div>

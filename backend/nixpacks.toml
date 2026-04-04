@@ -1,6 +1,6 @@
-# Nixpacks (Railway) — ensure setuptools + full requirements install (fixes pkg_resources on Python 3.12)
+# Nixpacks (Railway) — use venv Python (Nix's `python` has no pip). "..." keeps the provider defaults.
 [phases.install]
 cmds = [
-  "python -m pip install --upgrade pip setuptools wheel",
-  "python -m pip install -r requirements.txt",
+  "/opt/venv/bin/python -m pip install --upgrade pip setuptools wheel",
+  "...",
 ]
