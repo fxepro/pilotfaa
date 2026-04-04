@@ -182,8 +182,13 @@ def _build_db_config():
             'PORT':     str(_p.port or 5432),
             'OPTIONS':  {
                 'connect_timeout': 10,
-                # On Railway, use public schema — no custom search_path
-                # The core.0001 schema migration is skipped via --fake-initial
+                'options': (
+                    '-c search_path='
+                    'core,users,financials,multilocation,multilanguage,'
+                    'emails,products,inventory,pricing,purchasing,invoicing,'
+                    'site_settings,audit_reports,api_monitoring,blog,'
+                    'db_management,pilotfaa,public'
+                ),
             },
         }
     return {
