@@ -20,6 +20,7 @@ export type ViewId =
   | 'lesson'    | 'tutor'       | 'quiz'
   | 'bookmarks' | 'notes'       | 'phak'
   | 'faraim'    | 'acs'         | 'progress'
+  | 'faaLibrary' | 'faaReader'
 
 // ─── Context shape ────────────────────────────────────────────────────────────
 
@@ -27,6 +28,8 @@ interface PilotFAAContextValue {
   // Navigation
   activeView: ViewId
   setActiveView: (v: ViewId) => void
+  faaReaderBook: string
+  openFaaReader: (shortCode: string) => void
   activeLessonId: number | null
   openLesson: (lessonId: number) => void
 
@@ -97,6 +100,12 @@ const PilotFAAContext = createContext<PilotFAAContextValue | null>(null)
 export function PilotFAAProvider({ children }: { children: ReactNode }) {
   // Navigation
   const [activeView,     setActiveView]     = useState<ViewId>('dashboard')
+  const [faaReaderBook,  setFaaReaderBook]   = useState<string>('PHAK')
+
+  const openFaaReader = useCallback((shortCode: string) => {
+    setFaaReaderBook(shortCode)
+    setActiveView('faaReader')
+  }, [])
   const [activeLessonId, setActiveLessonId] = useState<number | null>(null)
 
   // Chapter drill-down
@@ -315,6 +324,7 @@ export function PilotFAAProvider({ children }: { children: ReactNode }) {
 
   const value: PilotFAAContextValue = {
     activeView, setActiveView,
+    faaReaderBook, openFaaReader,
     activeLessonId, openLesson,
     activeChapterId, openChapter, activeChapterData, lastChapterId,
     courses, activeCourse, activeCourseSlug, setActiveCourseSlug, loadingCourses,

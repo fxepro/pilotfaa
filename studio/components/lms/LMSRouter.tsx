@@ -12,6 +12,8 @@ const QuizView       = lazy(() => import('./views/QuizView'))
 const BookmarksView  = lazy(() => import('./views/BookmarksView'))
 const NotesView      = lazy(() => import('./views/NotesView'))
 const PhakView       = lazy(() => import('./views/PhakView'))
+const FAALibraryView = lazy(() => import('./views/FAALibraryView'))
+const FAAReaderView  = lazy(() => import('./views/FAAReaderView'))
 const FarAimView     = lazy(() => import('./views/FarAimView'))
 const AcsView        = lazy(() => import('./views/AcsView'))
 const ProgressView   = lazy(() => import('./views/ProgressView'))
@@ -40,6 +42,8 @@ export default function LMSRouter() {
       {activeView === 'quiz'         && <QuizView />}
       {activeView === 'bookmarks'    && <BookmarksView />}
       {activeView === 'notes'        && <NotesView />}
+      {activeView === 'faaLibrary'   && <FAALibraryView />}
+      {activeView === 'faaReader'    && <FAAReaderView />}
       {activeView === 'phak'         && <PhakView />}
       {activeView === 'faraim'       && <FarAimView />}
       {activeView === 'acs'          && <AcsView />}

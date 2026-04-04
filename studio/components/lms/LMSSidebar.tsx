@@ -34,6 +34,7 @@ const NAV_SECTIONS = [
   {
     label: 'FAA References',
     items: [
+      { id: 'faaLibrary' as ViewId, icon: '📚', label: 'FAA Library' },
       { id: 'phak'   as ViewId, icon: '📖', label: 'PHAK Reference' },
       { id: 'faraim' as ViewId, icon: '⚖️', label: 'FAR / AIM' },
       { id: 'acs'    as ViewId, icon: '🎯', label: 'ACS Standards' },
