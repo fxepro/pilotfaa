@@ -180,7 +180,11 @@ def _build_db_config():
             'PASSWORD': _p.password,
             'HOST':     _p.hostname,
             'PORT':     str(_p.port or 5432),
-            'OPTIONS':  {'connect_timeout': 10},
+            'OPTIONS':  {
+                'connect_timeout': 10,
+                # On Railway, use public schema — no custom search_path
+                # The core.0001 schema migration is skipped via --fake-initial
+            },
         }
     return {
         'ENGINE':   'django.db.backends.postgresql',
