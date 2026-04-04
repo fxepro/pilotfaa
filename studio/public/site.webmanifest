@@ -1,0 +1,16 @@
+{
+  "name": "PilotFAA",
+  "short_name": "PilotFAA",
+  "description": "FAA-grounded aviation ground school — lessons, quizzes, and progress tracking.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1756C8",
+  "icons": [
+    {
+      "src": "/favicon_io/pilotfaa-favicon.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}
