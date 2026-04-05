@@ -1,3 +1,17 @@
+# Large FAA PDFs (upload via upload_pdf.py; do not commit)
+backend/*.pdf
+backend/FAA/*.pdf
+
+# Local-only backend seed scripts (not committed)
+backend/seed.py
+backend/seed_chapter1_content.py
+backend/seed_chapter2_content.py
+backend/seed_faa_sources.py
+backend/seed_pilotfaa.py
+
+Scripts/
+Scripts
+
 commands.txt
 # Environment variables
 .env
