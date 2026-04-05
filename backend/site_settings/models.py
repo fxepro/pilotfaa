@@ -1,6 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+SCHEMA = "site_settings"
+
+def schema_table(table):
+    return f'{SCHEMA}"."{table}'
+
+
 
 class SiteConfig(models.Model):
     """
@@ -120,6 +126,7 @@ class SiteConfig(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = schema_table("site_settings_siteconfig")
         verbose_name = 'Site Configuration'
         verbose_name_plural = 'Site Configuration'
 

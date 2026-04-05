@@ -7,6 +7,12 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+SCHEMA = "db_management"
+
+def schema_table(table):
+    return f'{SCHEMA}"."{table}'
+
+
 
 class DatabaseConnection(models.Model):
     """
@@ -42,6 +48,7 @@ class DatabaseConnection(models.Model):
     last_checked = models.DateTimeField(null=True, blank=True, help_text='Last connection test time')
     
     class Meta:
+        db_table = schema_table("db_management_databaseconnection")
         ordering = ['-created_at']
         verbose_name = 'Database Connection'
         verbose_name_plural = 'Database Connections'
@@ -103,6 +110,7 @@ class DatabaseActivityLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     
     class Meta:
+        db_table = schema_table("db_management_databaseactivitylog")
         ordering = ['-created_at']
         verbose_name = 'Database Activity Log'
         verbose_name_plural = 'Database Activity Logs'
@@ -151,6 +159,7 @@ class DatabasePerformanceMetrics(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     
     class Meta:
+        db_table = schema_table("db_management_databaseperformancemetrics")
         ordering = ['-created_at']
         verbose_name = 'Database Performance Metric'
         verbose_name_plural = 'Database Performance Metrics'

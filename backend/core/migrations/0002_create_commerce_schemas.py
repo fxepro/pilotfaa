@@ -1,40 +1,16 @@
 from django.db import migrations
 
-
 FORWARD_SQL = """
-DO $$
-DECLARE
-  mapping RECORD;
-BEGIN
-  FOR mapping IN SELECT * FROM (VALUES
-    ('products'),
-    ('inventory'),
-    ('pricing'),
-    ('purchasing'),
-    ('invoicing')
-  ) AS s(schema_name)
-  LOOP
-    EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', mapping.schema_name);
-  END LOOP;
-END $$;
+CREATE SCHEMA IF NOT EXISTS products;
+CREATE SCHEMA IF NOT EXISTS inventory;
+CREATE SCHEMA IF NOT EXISTS pricing;
+CREATE SCHEMA IF NOT EXISTS purchasing;
+CREATE SCHEMA IF NOT EXISTS invoicing;
 """
 
 REVERSE_SQL = """
-DO $$
-DECLARE
-  mapping RECORD;
-BEGIN
-  FOR mapping IN SELECT * FROM (VALUES
-    ('products'),
-    ('inventory'),
-    ('pricing'),
-    ('purchasing'),
-    ('invoicing')
-  ) AS s(schema_name)
-  LOOP
-    EXECUTE format('DROP SCHEMA IF EXISTS %I CASCADE', mapping.schema_name);
-  END LOOP;
-END $$;
+-- Intentionally left empty — schemas are not dropped on reverse.
+SELECT 1;
 """
 
 
@@ -42,7 +18,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ("core", "0001_create_app_schemas"),
     ]
-
     operations = [
         migrations.RunSQL(FORWARD_SQL, REVERSE_SQL),
     ]

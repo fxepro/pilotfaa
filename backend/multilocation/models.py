@@ -1,5 +1,11 @@
 from django.db import models
 
+SCHEMA = "multilocation"
+
+def schema_table(table):
+    return f'{SCHEMA}"."{table}'
+
+
 
 class Location(models.Model):
     """AWS Lightsail region locations for PageSpeed/Lighthouse runners"""
@@ -20,6 +26,7 @@ class Location(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
+        db_table = schema_table("multilocation_location")
         ordering = ['continent', 'country', 'name']
         verbose_name = 'Location'
         verbose_name_plural = 'Locations'
@@ -56,6 +63,7 @@ class RunnerHealth(models.Model):
     updated_at = models.DateTimeField(auto_now=True, help_text='Last health check timestamp')
     
     class Meta:
+        db_table = schema_table("multilocation_runnerhealth")
         ordering = ['-updated_at']
         verbose_name = 'Runner Health'
         verbose_name_plural = 'Runner Health Records'

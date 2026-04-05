@@ -5,6 +5,12 @@ from django.utils.text import slugify
 from django.urls import reverse
 import re
 
+SCHEMA = "blog"
+
+def schema_table(table):
+    return f'{SCHEMA}"."{table}'
+
+
 
 class Category(models.Model):
     """Blog category model"""
@@ -16,6 +22,7 @@ class Category(models.Model):
     order = models.IntegerField(default=0, help_text='Display order')
 
     class Meta:
+        db_table = schema_table("blog_category")
         ordering = ['order', 'name']
         verbose_name_plural = 'Categories'
 
@@ -35,6 +42,7 @@ class Tag(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        db_table = schema_table("blog_tag")
         ordering = ['name']
 
     def __str__(self):
@@ -81,6 +89,7 @@ class BlogPost(models.Model):
     translations = models.JSONField(default=dict, blank=True, help_text='Translations of this post')
 
     class Meta:
+        db_table = schema_table("blog_blogpost")
         ordering = ['-published_at', '-created_at']
         indexes = [
             models.Index(fields=['slug']),
@@ -122,6 +131,7 @@ class BlogAuthor(models.Model):
     author_page_url = models.URLField(blank=True)
 
     class Meta:
+        db_table = schema_table("blog_blogauthor")
         verbose_name = 'Blog Author'
         verbose_name_plural = 'Blog Authors'
 

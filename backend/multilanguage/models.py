@@ -1,6 +1,12 @@
 from django.db import models
 from django.utils import timezone
 
+SCHEMA = "multilanguage"
+
+def schema_table(table):
+    return f'{SCHEMA}"."{table}'
+
+
 
 class PageTranslationStatus(models.Model):
     """
@@ -49,6 +55,7 @@ class PageTranslationStatus(models.Model):
     notes = models.TextField(blank=True, help_text='Admin notes about translation status')
     
     class Meta:
+        db_table = schema_table("multilanguage_pagetranslationstatus")
         ordering = ['page_type', 'page_route']
         verbose_name = 'Page Translation Status'
         verbose_name_plural = 'Page Translation Statuses'

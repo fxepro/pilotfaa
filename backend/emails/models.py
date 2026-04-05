@@ -2,6 +2,12 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 
+SCHEMA = "emails"
+
+def schema_table(table):
+    return f'{SCHEMA}"."{table}'
+
+
 class EmailCapture(models.Model):
     """Model to capture all email submissions from various forms"""
     
@@ -38,6 +44,7 @@ class EmailCapture(models.Model):
     )
 
     class Meta:
+        db_table = schema_table("emails_emailcapture")
         ordering = ['-created_at']
         verbose_name = "Email Capture"
         verbose_name_plural = "Email Captures"
@@ -85,6 +92,7 @@ class UpdateSignup(models.Model):
     )
 
     class Meta:
+        db_table = schema_table("emails_updatesignup")
         ordering = ['-created_at']
         verbose_name = "Update Signup"
         verbose_name_plural = "Update Signups"
@@ -164,6 +172,7 @@ class Feedback(models.Model):
     )
 
     class Meta:
+        db_table = schema_table("emails_feedback")
         ordering = ['-created_at']
         verbose_name = "Feedback"
         verbose_name_plural = "Feedback"

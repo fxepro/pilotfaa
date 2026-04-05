@@ -1,6 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+SCHEMA = "financials"
+
+def schema_table(table):
+    return f'{SCHEMA}"."{table}'
+
+
 
 class PaymentMethod(models.Model):
     METHOD_CHOICES = (
@@ -50,6 +56,7 @@ class PaymentMethod(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        db_table = schema_table("financials_paymentmethod")
         ordering = ['-is_default', '-created_at']
 
     def __str__(self):
@@ -152,6 +159,7 @@ class SubscriptionPlan(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
+        db_table = schema_table("financials_subscriptionplan")
         verbose_name = 'Subscription Plan'
         verbose_name_plural = 'Subscription Plans'
         ordering = ['display_order', 'price_monthly']
@@ -278,6 +286,7 @@ class UserSubscription(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = schema_table("financials_usersubscription")
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['paypal_subscription_id']),
@@ -369,6 +378,7 @@ class BillingTransaction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        db_table = schema_table("financials_billingtransaction")
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['paypal_transaction_id']),
@@ -474,6 +484,7 @@ class CoinbaseCharge(models.Model):
     )
     
     class Meta:
+        db_table = schema_table("financials_coinbasecharge")
         ordering = ['-created_at']
         verbose_name = 'Coinbase Charge'
         verbose_name_plural = 'Coinbase Charges'
@@ -613,6 +624,7 @@ class CoinbaseTransaction(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
+        db_table = schema_table("financials_coinbasetransaction")
         ordering = ['-created_at']
         verbose_name = 'Coinbase Transaction'
         verbose_name_plural = 'Coinbase Transactions'
@@ -707,6 +719,7 @@ class PaymentProviderConfig(models.Model):
     )
     
     class Meta:
+        db_table = schema_table("financials_paymentproviderconfig")
         verbose_name = 'Payment Provider Config'
         verbose_name_plural = 'Payment Provider Configs'
         ordering = ['provider']
@@ -833,6 +846,7 @@ class BillingAddress(models.Model):
     )
     
     class Meta:
+        db_table = schema_table("financials_billingaddress")
         verbose_name = 'Billing Address'
         verbose_name_plural = 'Billing Addresses'
         ordering = ['-is_default', '-last_used_at', '-created_at']
@@ -987,6 +1001,7 @@ class PromotionalDeal(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
+        db_table = schema_table("financials_promotionaldeal")
         verbose_name = 'Promotional Deal'
         verbose_name_plural = 'Promotional Deals'
         ordering = ['-start_date']

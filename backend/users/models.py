@@ -5,6 +5,12 @@ import uuid
 import random
 import string
 
+SCHEMA = "users"
+
+def schema_table(table):
+    return f'{SCHEMA}"."{table}'
+
+
 class UserProfile(models.Model):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
@@ -120,6 +126,7 @@ class UserProfile(models.Model):
         return self.is_code_expired()
     
     class Meta:
+        db_table = schema_table("users_userprofile")
         verbose_name = "User Profile"
         verbose_name_plural = "User Profiles"
 
@@ -135,6 +142,7 @@ class UserActivity(models.Model):
         return f"{self.user.username} - {self.action} at {self.timestamp}"
     
     class Meta:
+        db_table = schema_table("users_useractivity")
         verbose_name = "User Activity"
         verbose_name_plural = "User Activities"
         ordering = ['-timestamp']
@@ -160,6 +168,9 @@ class UserCorporateProfile(models.Model):
     def __str__(self):
         return f"{self.user.username} Corporate Profile"
 
+    class Meta:
+        db_table = schema_table("users_usercorporateprofile")
+
 
 class MonitoredSite(models.Model):
     STATUS_CHOICES = (
@@ -183,6 +194,7 @@ class MonitoredSite(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        db_table = schema_table("users_monitoredsite")
         ordering = ['-created_at']
         unique_together = ('user', 'url')
 
