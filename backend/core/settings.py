@@ -182,13 +182,6 @@ def _build_db_config():
             'PORT':     str(_p.port or 5432),
             'OPTIONS':  {
                 'connect_timeout': 10,
-                'options': (
-                    '-c search_path='
-                    'core,users,financials,multilocation,multilanguage,'
-                    'emails,products,inventory,pricing,purchasing,invoicing,'
-                    'site_settings,audit_reports,api_monitoring,blog,'
-                    'db_management,pilotfaa,public'
-                ),
             },
         }
     return {
