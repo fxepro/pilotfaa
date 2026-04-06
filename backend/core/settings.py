@@ -170,7 +170,7 @@ TEMPLATES = [
 
 def _build_db_config():
     import urllib.parse as _up
-    _url = config('DATABASE_URL', default='')
+    _url = config('DATABASE_PUBLIC_URL', default='') or config('DATABASE_URL', default='')
     if _url:
         _p = _up.urlparse(_url)
         return {
