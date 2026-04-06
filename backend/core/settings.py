@@ -108,6 +108,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'django_filters',
     'django_extensions',
@@ -166,11 +167,11 @@ TEMPLATES = [
 ]
 
 
-# ── Database — reads DATABASE_URL on Railway, falls back to DB_* vars locally ──
+# ── Database — Railway: DATABASE_URL (private) preferred; DATABASE_PUBLIC_URL if only that is set; else DB_* ──
 
 def _build_db_config():
     import urllib.parse as _up
-    _url = config('DATABASE_PUBLIC_URL', default='') or config('DATABASE_URL', default='')
+    _url = config('DATABASE_URL', default='') or config('DATABASE_PUBLIC_URL', default='')
     if _url:
         _p = _up.urlparse(_url)
         return {
