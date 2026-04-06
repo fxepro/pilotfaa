@@ -168,6 +168,14 @@ TEMPLATES = [
 
 
 # ── Database — Railway: DATABASE_URL (private) preferred; DATABASE_PUBLIC_URL if only that is set; else DB_* ──
+# public first: Django auth and third-party tables (e.g. token_blacklist) live in public unless moved.
+_PG_SEARCH_PATH = (
+    'public,core,users,financials,multilocation,multilanguage,'
+    'emails,products,inventory,pricing,purchasing,invoicing,'
+    'site_settings,audit_reports,api_monitoring,blog,'
+    'db_management,pilotfaa'
+)
+
 
 def _build_db_config():
     import urllib.parse as _up
@@ -183,7 +191,7 @@ def _build_db_config():
             'PORT':     str(_p.port or 5432),
             'OPTIONS':  {
                 'connect_timeout': 10,
-                'options': '-c search_path=public,core,users,financials,multilocation,multilanguage,emails,products,inventory,pricing,purchasing,invoicing,site_settings,audit_reports,api_monitoring,blog,db_management,pilotfaa',
+                'options':    f'-c search_path={_PG_SEARCH_PATH}',
             },
         }
     return {
@@ -195,13 +203,7 @@ def _build_db_config():
         'PORT':     config('DB_PORT',     default='5432'),
         'OPTIONS': {
             'connect_timeout': 10,
-            'options': (
-                '-c search_path='
-                'core,users,financials,multilocation,multilanguage,'
-                'emails,products,inventory,pricing,purchasing,invoicing,'
-                'site_settings,audit_reports,api_monitoring,blog,'
-                'db_management,pilotfaa,public'
-            ),
+            'options':    f'-c search_path={_PG_SEARCH_PATH}',
         },
     }
 

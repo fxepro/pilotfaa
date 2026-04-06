@@ -7,8 +7,10 @@ import re
 
 SCHEMA = "blog"
 
-def schema_table(table):
-    return f'{SCHEMA}"."{table}'
+
+def schema_table(table: str) -> str:
+    """Qualified table name for PostgreSQL (Django: schema.modeltable)."""
+    return f"{SCHEMA}.{table}"
 
 
 
